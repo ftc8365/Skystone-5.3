@@ -86,7 +86,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                 robot.servoCamera.setPosition(0.52);
 
                 sleep(1000);
-                List<Recognition> updatedRecognitions = robot.getTensorFlowUpdatedRecognitions();
+                List<Recognition> updatedRecognitions = robot.getTensorFlowRecognitions();
 
                 if (updatedRecognitions != null) {
                     telemetry.addData("Pos 1 Camera Pos", robot.servoCamera.getPosition());
@@ -110,7 +110,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                     robot.servoCamera.setPosition(0.45);
 
                     sleep(1000);
-                    updatedRecognitions = robot.getTensorFlowUpdatedRecognitions();
+                    updatedRecognitions = robot.getTensorFlowRecognitions();
 
                     if (updatedRecognitions != null) {
                         telemetry.addData("Pos 2 Camera Pos", robot.servoCamera.getPosition());
@@ -139,7 +139,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            List<Recognition> updatedRecognitions = robot.getTensorFlowUpdatedRecognitions();
+            List<Recognition> updatedRecognitions = robot.getTensorFlowRecognitions();
 
             if (updatedRecognitions != null) {
               telemetry.addData("# Object Detected", updatedRecognitions.size());

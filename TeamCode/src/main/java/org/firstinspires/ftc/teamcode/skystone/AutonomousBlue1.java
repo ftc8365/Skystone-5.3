@@ -66,20 +66,32 @@ public class AutonomousBlue1 extends LinearOpMode {
     public void runOpMode() {
 
         robot.setOpMode( this );
+
+        robot.initCameraServo();
+        robot.initTensorFlowObjectDetectionWebcam();
         robot.initMotors();
         robot.initRangeSensors();
         robot.initGyroSensor();
         robot.initColorSensors();
-//        robot.initIntakeServos();
+        robot.initIntakeServos();
         robot.initAttachmentServos();
 
-        while(!opModeIsActive() && !isStopRequested())
-        {
-            telemetry.addData("colorsesnor",  "red %d green %d blue %d", robot.colorSensor.red(), robot.colorSensor.green(), robot.colorSensor.blue());
-            telemetry.addData("",  "------------------------------");
-            telemetry.addData(">", "Press Play to start");
-            telemetry.update();
+        robot.servoCamera.setPosition(0.55);
+
+        double lastSecond = -1;
+        SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
+
+        while (!opModeIsActive() && !isStopRequested()) {
+
+            if ( runtime.seconds() > lastSecond + 2 ) {
+                skystonePosition = robot.scanSkystone(SkystoneRobot.Alliance.ALLIANCE_BLUE, skystonePosition);
+                telemetry.addData( "Skystone", skystonePosition);
+                telemetry.addData("",  "------------------------------");
+                telemetry.addData(">", "Press Play to start");
+                telemetry.update();
+            }
         }
+
 
 
         ///////////////////////////////////////
@@ -89,47 +101,77 @@ public class AutonomousBlue1 extends LinearOpMode {
 
         robot.lockLiftMotor();
 
-        robot.driveForwardTillRotation(1.2, 0.25, 0,true);
+        robot.driveForwardTillRotation(1.2, 0.3, -1,true);
 
-        robot.driveRightTillRotation(0.8, 0.40, true);
-
-        robot.driveForwardTillRange( 15, 0.2, 0,false );
-
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-
-        // Pick up stone
-        robot.driveForwardTillRotation(1.5,0.15, 0,false );
-
-        robot.turnIntakeoff();
-
-        robot.driveBackwardTillRotation(1.25, 0.25, true);
-
-        robot.turnLeftTillDegrees(270, 0.40, true);
-
-        robot.driveForwardTillRotation(4, 0.25, 270,true);
-
-        // Eject stone
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
-
-        robot.driveBackwardTillRotation(4.5, 0.35, true);
-
-        robot.turnRightTillDegrees(0, 0.40, true);
+        robot.driveRightTillRotation(0.9, 0.45, true);
 
         robot.driveForwardTillRange( 15, 0.2, -1,false );
 
         robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
         // Pick up stone
-        robot.driveForwardTillRotation(1.5,0.15, -1,false );
+
+        robot.driveForwardTillRotation(1.5,0.2, -1,false );
 
         robot.turnIntakeoff();
 
-        robot.driveBackwardTillRotation(1.25, 0.25, true);
+        robot.driveBackwardTillRotation(1.0, 0.3, true);
 
-        robot.turnLeftTillDegrees(270, 0.40, true);
+        robot.turnLeftTillDegrees(270, 0.45, true);
 
-        robot.driveForwardTillRotation(4, 0.25, -1,true);
-        //eject skystone here
+        robot.driveForwardTillRotation(3, 0.3, -1,true);
+
+       // robot.turnLeftTillDegrees(210, 0.50, true);
+
+        // Eject stone
+
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
+
+        sleep(1000);
+
+        robot.turnIntakeoff();
+
+        robot.turnLeftTillDegrees(90, 0.45, true);
+
+        robot.driveForwardTillRotation(4.5, 0.45, -1, true);
+
+        robot.driveForwardTillRange(30,0.3, -1, true);
+
+        robot.turnLeftTillDegrees(359, 0.45, true);
+
+
+////////////////
+
+        robot.driveForwardTillRange( 15, 0.2, -1,false );
+
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+        // Pick up stone
+
+        robot.driveForwardTillRotation(1.5,0.2, -1,false );
+
+        robot.turnIntakeoff();
+
+        robot.driveBackwardTillRotation(1.25, 0.3, true);
+
+        robot.turnLeftTillDegrees(270, 0.45, true);
+
+        robot.driveForwardTillRotation(5, 0.3, -1,true);
+
+        // robot.turnLeftTillDegrees(210, 0.50, true);
+
+        // Eject stone
+
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
+
+        sleep(1000);
+
+        robot.turnIntakeoff();
+
+        robot.driveBackwardTillRotationOrColor(1, SkystoneRobot.Color.COLOR_BLUE, 0.30, true);
+
+
+
 
         robot.unlockLiftMotor();
 
