@@ -55,8 +55,10 @@ public class SkystoneDriverControl extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();
 
-    double DRIVE_POWER_RATIO = 0.60;
-    double TURN_POWER_RATIO = 0.50;
+    double DRIVE_NORMAL_POWER_RATIO = 0.60;
+    double DRIVE_LOW_POWER_RATIO    = 0.30;
+    double TURN_NORMAL_POWER_RATIO  = 0.50;
+    double TURN_LOW_POWER_RATIO     = 0.25;
 
     double liftGrabberPos = 0.0;
     double liftRotatorPos = 0.0;
@@ -67,13 +69,13 @@ public class SkystoneDriverControl extends LinearOpMode {
         LIFT_DOWN
     }
 
-
     LiftState liftState = LiftState.LIFT_DOWN;
 
     @Override
     public void runOpMode()
     {
         robot.setOpMode(this);
+        robot.setRunningAutonomous(false);
         robot.initMotors();
         robot.initAttachmentServos();
         robot.initGyroSensor();
@@ -92,7 +94,7 @@ public class SkystoneDriverControl extends LinearOpMode {
 
             operateIntake();
             operateDriveTrain();
-//            operateFoundation();
+            operateFoundation();
 
             telemetry.update();
         }
@@ -101,11 +103,12 @@ public class SkystoneDriverControl extends LinearOpMode {
     }
 
     void operateFoundation(){
-        if (gamepad2.dpad_down) {
-            robot.servoFoundation.setPosition(0.3);
+        if (gamepad1.right_bumper) {
+            robot.servoFoundation.setPosition(0.08);
         }
-        if (gamepad2.dpad_up){
-            robot.servoFoundation.setPosition(0.8);
+
+        if (gamepad1.left_bumper){
+            robot.servoFoundation.setPosition(0.9);
         }
     }
 
@@ -148,11 +151,10 @@ public class SkystoneDriverControl extends LinearOpMode {
         }
 
         if (Math.abs(gamepad2.right_stick_y) > 0.1) {
-
             if (gamepad2.right_stick_y > 0.01)
-                robot.motorGrabber.setPower( 0.35 );
+                robot.motorGrabber.setPower( 0.60 );
             else if (gamepad2.right_stick_y < 0.01)
-                robot.motorGrabber.setPower( -0.35 );
+                robot.motorGrabber.setPower( -0.60 );
 
         }
 
@@ -168,20 +170,27 @@ public class SkystoneDriverControl extends LinearOpMode {
             robot.turnIntakeoff();
         }
 
-//        telemetry.addData("Grabber Position", this.liftGrabberPos);
-//        telemetry.addData("Rotator Position", this.liftRotatorPos);
-
     }
 
     void operateDriveTrain() {
+
+        double drivePowerRatio = this.DRIVE_NORMAL_POWER_RATIO;
+        double turnPowerRatio  = this.TURN_NORMAL_POWER_RATIO;
+
+        if (gamepad1.left_stick_button) {
+            drivePowerRatio = this.DRIVE_LOW_POWER_RATIO;
+        }
+
+        if (gamepad1.right_stick_button){
+            turnPowerRatio  = this.TURN_LOW_POWER_RATIO;
+        }
 
         ///////////////////////////////////////////////////////////
         // Gamepad1 Button X - turns on/off Direction Aware Drive
         ///////////////////////////////////////////////////////////
 
-        if (gamepad1.x == true)
-        {
-            this.useDirectionAware = !this.useDirectionAware;
+        if (gamepad1.x) {
+            this.useDirectionAware = true;
         }
 
         ///////////////////////////////////////////////////////////
@@ -191,11 +200,6 @@ public class SkystoneDriverControl extends LinearOpMode {
 //        {
 //            this.initGyroPosition = gyroSensor.getHeading();
 //        }
-
-        double motorFRPower = 0;
-        double motorFLPower = 0;
-        double motorBRPower = 0;
-        double motorBLPower = 0;
 
         double driveStickXValue = gamepad1.left_stick_x;
         double driveStickYValue = gamepad1.left_stick_y;
@@ -210,79 +214,100 @@ public class SkystoneDriverControl extends LinearOpMode {
         else
             joystickPosition = getJoystickPosition(driveStickXValue, driveStickYValue);
 
-        if (Math.abs(turnStickXValue) > 0.1) {
-            motorFRPower = -1 * turnStickXValue * TURN_POWER_RATIO;
-            motorFLPower =  1 * turnStickXValue * TURN_POWER_RATIO;
-            motorBRPower = -1 * turnStickXValue * TURN_POWER_RATIO;
-            motorBLPower =  1 * turnStickXValue * TURN_POWER_RATIO;
+        double value = Math.max( Math.abs(driveStickYValue), Math.abs(driveStickXValue));
+
+        double motorFRPower = 0;
+        double motorFLPower = 0;
+        double motorBRPower = 0;
+        double motorBLPower = 0;
+
+        switch (joystickPosition) {
+            case 1:
+                motorFRPower = 1 * value;
+                motorFLPower = 1 * value;
+                motorBRPower = 1 * value;
+                motorBLPower = 1 * value;
+                break;
+
+            case 2:
+                motorFRPower = 0 * value;
+                motorFLPower = 1 * value;
+                motorBRPower = 1 * value;
+                motorBLPower = 0 * value;
+                break;
+
+            case 3:
+                motorFRPower = -1 * value;
+                motorFLPower =  1 * value;
+                motorBRPower =  1 * value;
+                motorBLPower = -1 * value;
+                break;
+
+            case 4:
+                motorFRPower = -1 * value;
+                motorFLPower = 0 * value;
+                motorBRPower = 0 * value;
+                motorBLPower = -1 * value;
+                break;
+            case 5:
+                motorFRPower = -1 * value;
+                motorFLPower = -1 * value;
+                motorBRPower = -1 * value;
+                motorBLPower = -1 * value;
+                break;
+            case 6:
+                motorFRPower =  0 * value;
+                motorFLPower = -1 * value;
+                motorBRPower = -1 * value;
+                motorBLPower =  0 * value;
+                break;
+            case 7:
+                motorFRPower =  1 * value;
+                motorFLPower = -1 * value;
+                motorBRPower = -1 * value;
+                motorBLPower =  1 * value;
+                break;
+            case 8:
+                motorFRPower = 1 * value;
+                motorFLPower = 0 * value;
+                motorBRPower = 0 * value;
+                motorBLPower = 1 * value;
+                break;
+            case 0:
+                motorFRPower = 0;
+                motorFLPower = 0;
+                motorBRPower = 0;
+                motorBLPower = 0;
+                break;
         }
-        else {
-            double value = Math.max( Math.abs(driveStickYValue), Math.abs(driveStickXValue));
+
+        motorFRPower = motorFRPower * drivePowerRatio;
+        motorFLPower = motorFLPower * drivePowerRatio;
+        motorBRPower = motorBRPower * drivePowerRatio;
+        motorBLPower = motorBLPower * drivePowerRatio;
+
+        ////////////////////
+        // if the robot is moving forward or backward (pos 1 or 5)
+        // and is turning, the robot will curve
+        // otherwise, the robot will just turn
+        ////////////////////
+        if (Math.abs(turnStickXValue) > 0.1) {
 
             switch (joystickPosition) {
                 case 1:
-                    motorFRPower = 1 * value;
-                    motorFLPower = 1 * value;
-                    motorBRPower = 1 * value;
-                    motorBLPower = 1 * value;
-                    break;
-
-                case 2:
-                    motorFRPower = 0 * value;
-                    motorFLPower = 1 * value;
-                    motorBRPower = 1 * value;
-                    motorBLPower = 0 * value;
-                    break;
-
-                case 3:
-                    motorFRPower = -1 * value;
-                    motorFLPower =  1 * value;
-                    motorBRPower =  1 * value;
-                    motorBLPower = -1 * value;
-                    break;
-
-                case 4:
-                    motorFRPower = -1 * value;
-                    motorFLPower = 0 * value;
-                    motorBRPower = 0 * value;
-                    motorBLPower = -1 * value;
-                    break;
                 case 5:
-                    motorFRPower = -1 * value;
-                    motorFLPower = -1 * value;
-                    motorBRPower = -1 * value;
-                    motorBLPower = -1 * value;
+                    motorFRPower = motorFRPower - (turnStickXValue * motorFRPower * 0.5 );
+                    motorFLPower = motorFLPower + (turnStickXValue * motorFRPower * 0.5 );
+                    motorBRPower = motorBRPower - (turnStickXValue * motorFRPower * 0.5 );
+                    motorBLPower = motorBLPower + (turnStickXValue * motorFRPower * 0.5 );
                     break;
-                case 6:
-                    motorFRPower =  0 * value;
-                    motorFLPower = -1 * value;
-                    motorBRPower = -1 * value;
-                    motorBLPower =  0 * value;
-                    break;
-                case 7:
-                    motorFRPower =  1 * value;
-                    motorFLPower = -1 * value;
-                    motorBRPower = -1 * value;
-                    motorBLPower =  1 * value;
-                    break;
-                case 8:
-                    motorFRPower = 1 * value;
-                    motorFLPower = 0 * value;
-                    motorBRPower = 0 * value;
-                    motorBLPower = 1 * value;
-                    break;
-                case 0:
-                    motorFRPower = 0;
-                    motorFLPower = 0;
-                    motorBRPower = 0;
-                    motorBLPower = 0;
+                default:
+                    motorFRPower = -1 * turnStickXValue * turnPowerRatio;
+                    motorFLPower =  1 * turnStickXValue * turnPowerRatio;
+                    motorBRPower = -1 * turnStickXValue * turnPowerRatio;
+                    motorBLPower =  1 * turnStickXValue * turnPowerRatio;
                     break;
             }
-
-            motorFRPower = motorFRPower * DRIVE_POWER_RATIO;
-            motorFLPower = motorFLPower * DRIVE_POWER_RATIO;
-            motorBRPower = motorBRPower * DRIVE_POWER_RATIO;
-            motorBLPower = motorBLPower * DRIVE_POWER_RATIO;
         }
 
         robot.motorFR.setPower(motorFRPower);
@@ -290,11 +315,11 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.motorBR.setPower(motorBRPower);
         robot.motorBL.setPower(motorBLPower);
 
-        telemetry.addData("x", driveStickXValue);
-        telemetry.addData("y", driveStickYValue);
-        telemetry.addData("heading", robot.getCurrentHeading());
-        telemetry.addData("joystick-pos", joystickPosition );
-        telemetry.addData("Direction Aware", this.useDirectionAware);
+//        telemetry.addData("x", driveStickXValue);
+//        telemetry.addData("y", driveStickYValue);
+//        telemetry.addData("heading", robot.getCurrentHeading());
+//        telemetry.addData("joystick-pos", joystickPosition );
+//        telemetry.addData("Direction Aware", this.useDirectionAware);
     }
 
     int getJoystickPosition(double x, double y) {

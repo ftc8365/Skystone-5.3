@@ -53,7 +53,7 @@ import java.util.List;
  * is explained below.
  */
 @TeleOp(name = "TEST Object Detection Webcam", group = "Test")
-//@Disabled
+@Disabled
 public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();

@@ -33,10 +33,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-
-import java.util.List;
-
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -50,7 +46,6 @@ import java.util.List;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-
 @Autonomous(name="Autonomous Test", group="Autonomous")
 //@Disabled
 public class AutonomousTest extends LinearOpMode {
@@ -69,6 +64,7 @@ public class AutonomousTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
         robot.setOpMode( this );
         robot.initMotors();
         robot.initRangeSensors();
@@ -81,8 +77,7 @@ public class AutonomousTest extends LinearOpMode {
 
         robot.initCameraServo();
         robot.servoCamera.setPosition(0.55);
-        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL );
-
+//        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL );
 
         double lastSecond = -1;
         SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
@@ -91,39 +86,40 @@ public class AutonomousTest extends LinearOpMode {
 
             if ( runtime.seconds() > lastSecond + 2 ) {
 
-                skystonePosition = robot.scanSkystone(SkystoneRobot.Alliance.ALLIANCE_BLUE, skystonePosition);
+//                skystonePosition = robot.scanSkystone( skystonePosition);
                 telemetry.addData( "Skystone", skystonePosition);
-                telemetry.addData( "time", runtime.seconds() );
+                telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
+                telemetry.addData( "RangeFR", robot.rangeSensorFR.rawUltrasonic());
+                telemetry.addData( "RangeFL", robot.rangeSensorFL.rawUltrasonic());
+
+
                 telemetry.addData("",  "------------------------------");
                 telemetry.addData(">", "Press Play to start");
                 telemetry.update();
             }
         }
 
-
         double sidewayRotation;
+        double siteLocationDistanceOffset = 0;
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
             case SKYSTONE_POSITION_UNKNOWN:
-                sidewayRotation = 1.0;
+                sidewayRotation = 0.9;
+                siteLocationDistanceOffset = 0.0;
                 break;
             case SKYSTONE_POSITION_2:
-                sidewayRotation = 2.0;
+                sidewayRotation = 1.7;
+                siteLocationDistanceOffset = 0.1;
                 break;
             case SKYSTONE_POSITION_3:
-                sidewayRotation = 3.0;
+                sidewayRotation = 2.4;
+                siteLocationDistanceOffset = 0.2;
+                break;
+            default:
+                sidewayRotation = 0.9;
                 break;
         }
-
-        robot.shutdownTensorFlow();
-
-        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_1 );
-
-        sleep(1000);
-
-        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_2 );
-
 
 
         ///////////////////////////////////////
@@ -132,146 +128,65 @@ public class AutonomousTest extends LinearOpMode {
 
         robot.resetAutonomousTimer();
 
-        robot.lockLiftMotor();
+        robot.shutdownTensorFlow();
 
-        robot.unlockLiftMotor();
-        /*
-        robot.driveForwardTillRotation(1.0, 0.3, -1,true);
-
-        robot.driveLeftTillRotation(sidewayRotation, 0.45, true);
-
-        robot.driveBackwardTillRotation(0.5, 0.3, true);
-
-
-        robot.turnRightTillDegrees(90, 0.40, true);
-
-
-        robot.turnRightTillDegrees(120, 0.40, true);
-
-        robot.turnRightTillDegrees(270, 0.40, true);
-
-
-        robot.driveForwardTillRotation(1.0,0.30, 270,true );
-
-*/
-
-/*
-        robot.driveForwardTillRange( 15, 0.2, -1,false );
+//        robot.driveForwardTillRange(26, 0.3, -1,true);
 
         robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        // Pick up stone
-
-        robot.driveForwardTillRotation(1.5,0.2, -1,false );
-
-        robot.turnIntakeoff();
-
-
-        robot.driveForwardTillRotation(3, 0.3, -1,true);
-
-        // robot.turnLeftTillDegrees(210, 0.50, true);
-
-        // Eject stone
-
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
-
-        sleep(1000);
-
-        robot.turnIntakeoff();
-*/
+        robot.curveLeftTillDegrees(300, true);
 
 
 
 
+        ////////////////////////////
+        //
+        // 2. Pick up first stone
+        //
+        /////////////////////////////
 /*
-
-
-        robot.driveForwardTillRotation(1, 0.3, -1, true);
-
-        robot.driveBackwardTillRotation(0.5, 0.3, true);
-
-
-
-        robot.turnLeftTillDegrees(270, 0.40, true);
-
-        robot.driveForwardTillRotation(0.75, 0.3, 270, true);
-
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
-
-        robot.turnLeftTillDegrees(210, 0.40, true);
-
-        robot.turnIntakeoff();
-
-        sleep(500);
-        robot.turnLeftTillDegrees(90, 0.40, true);
-
-        robot.driveForwardTillRotation(1, 0.40, 90, true);
-*/
-
-//        telemetry.addData("pos", robot.getCurrentPositionInDegrees());
-//            telemetry.addData("range", robot.rangeSensorFR.rawUltrasonic());
-//        telemetry.update();
-
-//        sleep(2000);
-
-//        robot.turnLeftTillDegrees(0, 0.40, true);
-
-       // robot.turnLeftTillDegrees(180, 0.40, true);
-
-
-        //robot.turnLeftTillDegrees(90, 0.40, true);
-
-        // robot.driveForwardTillRange(40, 0.40, 90, true);
-        /*
-        robot.driveForwardTillRange( 15, 0.30, false );
-
         robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        // Pick up stone
-        robot.driveForwardTillRotation(1.5,0.15, true );
+        robot.driveForwardTillRotation(1.5, 0.25, -1,false );
 
         robot.turnIntakeoff();
 
+        robot.driveBackwardTillRotation(0.75, 0.5, true);
 
-        robot.driveBackwardTillRotation(0.20, 0.25, true);
 
-        robot.turnLeftTillDegrees(270, 0.40, true);
+        ////////////////////////////
+        //
+        // 3. Deliver first stone to building site
+        //
+        /////////////////////////////
 
-        robot.driveForwardTillRotation(0.75, 0.30, true);
 
-        // Eject stone
+        robot.turnLeftTillDegrees(270, true);
+
+        robot.servoPoker.setPosition(0.50);
+
+        robot.driveForwardTillRotation(0.5, 0.5, 270,true);
+
         robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
 
-        sleep(1000);
+        robot.turnLeftTillDegrees(90,true);
 
-        robot.driveBackwardTillRotationOrColor(1.0, SkystoneRobot.Color.COLOR_RED,0.15,true);
-
-        // Eject stone
         robot.turnIntakeoff();
+
+        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_2 );
+
+        robot.driveForwardTillRotation(2, 0.50, 90, true);
+
 */
-
-
-/*        robot.turnLeftTillDegrees(270, 0.40, true);
-
-        telemetry.addData("pos", robot.getCurrentPositionInDegrees());
-        telemetry.update();
-        sleep(2000);
-
-        robot.turnLeftTillDegrees(210, 0.40, true);
-
-        telemetry.addData("pos", robot.getCurrentPositionInDegrees());
-        telemetry.update();
-        sleep(2000);
-
-        robot.turnLeftTillDegrees(90, 0.40, true); */
-
-        //        robot.driveForwardTillRotationOrCOlor(5, SkystoneRobot.Color.COLOR_BLUE, 0.25,true);
-
         while (opModeIsActive() ) {
 
 //            telemetry.addData("color",  "red %d green %d blue %d", robot.colorSensor.red(), robot.colorSensor.green(), robot.colorSensor.blue());
 //            telemetry.addData("blue",  robot.isColorBlue());
+            telemetry.addData("skystone", skystonePosition);
             telemetry.addData("pos", robot.getCurrentPositionInDegrees());
+
+            telemetry.addData( "RangeFR", robot.rangeSensorFR.rawUltrasonic());
+            telemetry.addData( "RangeFL", robot.rangeSensorFL.rawUltrasonic());
 //            telemetry.addData("range", robot.rangeSensorFR.rawUltrasonic());
             telemetry.update();
         }
