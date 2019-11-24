@@ -108,7 +108,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         }
 
         if (gamepad1.left_bumper){
-            robot.servoFoundation.setPosition(0.9);
+            robot.servoFoundation.setPosition(1);
         }
     }
 
@@ -152,9 +152,9 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         if (Math.abs(gamepad2.right_stick_y) > 0.1) {
             if (gamepad2.right_stick_y > 0.01)
-                robot.motorGrabber.setPower( 0.60 );
+                robot.motorGrabber.setPower( 0.70 );
             else if (gamepad2.right_stick_y < 0.01)
-                robot.motorGrabber.setPower( -0.60 );
+                robot.motorGrabber.setPower( -0.70 );
 
         }
 

@@ -46,9 +46,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Blue 1", group="Autonomous")
+@Autonomous(name="Autonomous Red 2", group="Autonomous")
 //@Disabled
-public class AutonomousBlue1 extends LinearOpMode {
+public class AutonomousRed2 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -64,7 +64,7 @@ public class AutonomousBlue1 extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_RED );
         robot.setOpMode( this );
         robot.initMotors();
         robot.initRangeSensors();
@@ -76,7 +76,7 @@ public class AutonomousBlue1 extends LinearOpMode {
         robot.initTensorFlowObjectDetectionWebcam();
 
         robot.initCameraServo();
-        robot.servoCamera.setPosition(0.55);
+        robot.servoCamera.setPosition(0.52);
         robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL );
 
         double lastSecond = -1;
@@ -105,19 +105,19 @@ public class AutonomousBlue1 extends LinearOpMode {
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
             case SKYSTONE_POSITION_UNKNOWN:
-                sidewayRotation = 1.0;
-                siteLocationDistanceOffset = 0.00;
+                sidewayRotation = 1.4;
+                siteLocationDistanceOffset = 0.0;
                 break;
             case SKYSTONE_POSITION_2:
-                sidewayRotation = 1.7;
+                sidewayRotation = 2.0;
                 siteLocationDistanceOffset = 0.75;
                 break;
             case SKYSTONE_POSITION_3:
-                sidewayRotation = 2.3;
+                sidewayRotation = 2.6;
                 siteLocationDistanceOffset = 1.50;
                 break;
             default:
-                sidewayRotation = 1.0;
+                sidewayRotation = 1.4;
                 siteLocationDistanceOffset = 0.0;
                 break;
         }
@@ -145,7 +145,7 @@ public class AutonomousBlue1 extends LinearOpMode {
 
         robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_2 );
 
-        robot.driveRightTillRotation(sidewayRotation, 0.50, true);
+        robot.driveLeftTillRotation(sidewayRotation, 0.50, true);
 
         ////////////////////////////
         //
@@ -168,21 +168,20 @@ public class AutonomousBlue1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.turnLeftTillDegrees(270, true);
 
-        robot.servoPoker.setPosition(0.70);
+        robot.turnRightTillDegrees(90, true);
 
-        robot.driveForwardTillRotation(2.75 + siteLocationDistanceOffset, 0.6, 270, true);
+        robot.driveForwardTillRotation(2.75 + siteLocationDistanceOffset, 0.6, 90, true);
 
-        robot.motorIntakeRight.setPower(0.20);
-        robot.motorIntakeLeft.setPower(0.20);
+        robot.motorIntakeRight.setPower(0.25);
+        robot.motorIntakeLeft.setPower(0.25);
 
-        sleep(2000);
+        sleep(1000);
 
-        robot.motorIntakeRight.setPower(0);
-        robot.motorIntakeLeft.setPower(0);
+        robot.motorIntakeRight.setPower(0.10);
+        robot.motorIntakeLeft.setPower(0.10);
 
-        robot.turnLeftTillDegrees(90,true);
+        robot.turnRightTillDegrees(270, true);
 
         robot.motorIntakeRight.setPower(0.0);
         robot.motorIntakeLeft.setPower(0.0);
@@ -193,11 +192,9 @@ public class AutonomousBlue1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_2 );
+        robot.driveForwardTillRotation(3.25, 0.50, 270, true);
 
-        robot.driveForwardTillRotation(3.25, 0.50, 90, true);
-
-        robot.driveForwardTillRange(35, 0.30, 90, true);
+        robot.driveForwardTillRange(35, 0.30, 270, true);
 
         ////////////////////////////
         //
@@ -205,7 +202,7 @@ public class AutonomousBlue1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.turnLeftTillDegrees(359,true);
+        robot.turnRightTillDegrees(1,true);
 
         // Pick up stone
 
@@ -215,25 +212,25 @@ public class AutonomousBlue1 extends LinearOpMode {
 
         robot.turnIntakeoff();
 
-        robot.driveBackwardTillRotation(0.7, 0.5, true);
+        robot.driveBackwardTillRotation(2.0, 0.5, true);
 
         ////////////////////////////
         //
-        // 6. Deliver second stone to building site
+        // 6. Deliver first stone to building site
         //
         /////////////////////////////
 
-        robot.turnLeftTillDegrees(270, true);
+        robot.turnRightTillDegrees(90, true);
 
-        robot.driveForwardTillRotation(5.0, 0.60, 270, true);
+        robot.driveForwardTillRotation(5.0, 0.60, 90, true);
 
-        robot.motorIntakeRight.setPower(0.20);
-        robot.motorIntakeLeft.setPower(0.20);
+        robot.motorIntakeRight.setPower(0.25);
+        robot.motorIntakeLeft.setPower(0.25);
 
-        sleep(2000);
+        sleep(1000);
 
-        robot.motorIntakeRight.setPower(0);
-        robot.motorIntakeLeft.setPower(0);
+        robot.motorIntakeRight.setPower(0.10);
+        robot.motorIntakeLeft.setPower(0.10);
 
         ////////////////////////////
         //
@@ -241,8 +238,7 @@ public class AutonomousBlue1 extends LinearOpMode {
         //
         /////////////////////////////
 
-
-        robot.driveBackwardTillRotationOrColor(1.5, SkystoneRobot.Color.COLOR_BLUE, 0.30, true);
+        robot.driveBackwardTillRotationOrColor(1.5, SkystoneRobot.Color.COLOR_RED, 0.30, true);
 
         robot.motorIntakeRight.setPower(0.0);
         robot.motorIntakeLeft.setPower(0.0);

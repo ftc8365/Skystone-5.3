@@ -82,6 +82,9 @@ public class AutonomousRed1 extends LinearOpMode {
         double lastSecond = -1;
         SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
+        robot.servoLiftGrabber.setPosition(0.00);
+
+
         while (!opModeIsActive() && !isStopRequested()) {
 
             if ( runtime.seconds() > lastSecond + 2 ) {
@@ -107,14 +110,15 @@ public class AutonomousRed1 extends LinearOpMode {
                 break;
             case SKYSTONE_POSITION_2:
                 sidewayRotation = 2.0;
-                siteLocationDistanceOffset = 0.1;
+                siteLocationDistanceOffset = 0.75;
                 break;
             case SKYSTONE_POSITION_3:
-                sidewayRotation = 2.7;
-                siteLocationDistanceOffset = 0.2;
+                sidewayRotation = 2.6;
+                siteLocationDistanceOffset = 1.50;
                 break;
             default:
                 sidewayRotation = 1.4;
+                siteLocationDistanceOffset = 0.0;
                 break;
         }
 
@@ -137,11 +141,11 @@ public class AutonomousRed1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.driveForwardTillRotation(1.35, 0.5, -1,true);
+        robot.driveForwardTillRotation(1.35, 0.50, 0,true);
 
         robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_2 );
 
-        robot.driveLeftTillRotation(sidewayRotation, 0.45, true);
+        robot.driveLeftTillRotation(sidewayRotation, 0.50, true);
 
         ////////////////////////////
         //
@@ -151,11 +155,11 @@ public class AutonomousRed1 extends LinearOpMode {
 
         robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        robot.driveForwardTillRotation(1.5, 0.25, -1,false );
+        robot.driveForwardTillRotation(1.70, 0.25, 0,false );
 
         robot.turnIntakeoff();
 
-        robot.driveBackwardTillRotation(1.0, 0.5, true);
+        robot.driveBackwardTillRotation(1.2, 0.5, true);
 
 
         ////////////////////////////
@@ -167,13 +171,20 @@ public class AutonomousRed1 extends LinearOpMode {
 
         robot.turnRightTillDegrees(90, true);
 
-        robot.driveForwardTillRotation(2.5 + siteLocationDistanceOffset, 0.5, 90,true);
+        robot.driveForwardTillRotation(2.75 + siteLocationDistanceOffset, 0.6, 90, true);
 
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
+        robot.motorIntakeRight.setPower(0.20);
+        robot.motorIntakeLeft.setPower(0.20);
+
+        sleep(2000);
+
+        robot.motorIntakeRight.setPower(0);
+        robot.motorIntakeLeft.setPower(0);
 
         robot.turnRightTillDegrees(270, true);
 
-        robot.turnIntakeoff();
+        robot.motorIntakeRight.setPower(0.0);
+        robot.motorIntakeLeft.setPower(0.0);
 
         ////////////////////////////
         //
@@ -181,10 +192,9 @@ public class AutonomousRed1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.driveForwardTillRotation(4, 0.50, 270, true);
+        robot.driveForwardTillRotation(3.25, 0.50, 270, true);
 
-        robot.driveForwardTillRange(30, 0.35, 270, true);
-
+        robot.driveForwardTillRange(35, 0.30, 270, true);
 
         ////////////////////////////
         //
@@ -194,15 +204,15 @@ public class AutonomousRed1 extends LinearOpMode {
 
         robot.turnRightTillDegrees(1,true);
 
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-
         // Pick up stone
 
-        robot.driveForwardTillRotation(1.5,0.25, -1,false );
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+        robot.driveForwardTillRotation(1.0, 0.25, -1,false );
 
         robot.turnIntakeoff();
 
-        robot.driveBackwardTillRotation(1.25, 0.5, true);
+        robot.driveBackwardTillRotation(0.7, 0.5, true);
 
         ////////////////////////////
         //
@@ -212,13 +222,15 @@ public class AutonomousRed1 extends LinearOpMode {
 
         robot.turnRightTillDegrees(90, true);
 
-        robot.driveForwardTillRotation(5 + siteLocationDistanceOffset, 0.5, 90,true);
+        robot.driveForwardTillRotation(5.0, 0.60, 90, true);
 
-        // Eject stone
+        robot.motorIntakeRight.setPower(0.20);
+        robot.motorIntakeLeft.setPower(0.20);
 
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT);
+        sleep(2000);
 
-        sleep(250);
+        robot.motorIntakeRight.setPower(0);
+        robot.motorIntakeLeft.setPower(0);
 
         ////////////////////////////
         //
@@ -226,11 +238,13 @@ public class AutonomousRed1 extends LinearOpMode {
         //
         /////////////////////////////
 
-        robot.driveBackwardTillRotationOrColor(1, SkystoneRobot.Color.COLOR_BLUE, 0.30, true);
+        robot.driveBackwardTillRotationOrColor(1.5, SkystoneRobot.Color.COLOR_RED, 0.30, true);
 
-        robot.turnIntakeoff();
+        robot.motorIntakeRight.setPower(0.0);
+        robot.motorIntakeLeft.setPower(0.0);
 
         robot.unlockLiftMotor();
+
     }
 
 }

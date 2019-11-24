@@ -46,9 +46,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Outtake Test", group="Autonomous")
+@Autonomous(name="Camera Test", group="Autonomous")
 //@Disabled
-public class AutonomousOuttakeTest extends LinearOpMode {
+public class CameraTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -59,6 +59,7 @@ public class AutonomousOuttakeTest extends LinearOpMode {
     ElapsedTime autonomusTimer = new ElapsedTime();
 
     SkystoneRobot robot = new SkystoneRobot();
+
 
     @Override
     public void runOpMode() {
@@ -72,33 +73,20 @@ public class AutonomousOuttakeTest extends LinearOpMode {
         robot.initIntakeServos();
         robot.initAttachmentServos();
 
+        robot.initTensorFlowObjectDetectionWebcam();
+
+        robot.initCameraServo();
+        robot.servoCamera.setPosition(0.55);
+        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL );
+
+        double lastSecond = -1;
+        SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
         while (!opModeIsActive() && !isStopRequested()) {
-
-            telemetry.addData("",  "------------------------------");
-            telemetry.addData(">", "Press Play to start");
-            telemetry.update();
+                telemetry.addData("",  "------------------------------");
+                telemetry.addData(">", "Press Play to start");
+                telemetry.update();
         }
-
-        robot.lockLiftMotor();
-
-        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN );
-
-        sleep(1500);
-
-        robot.turnIntakeoff();
-
-        sleep(100);
-
-        robot.turnRightTillDegrees(90, true);
-
-        robot.driveForwardWithOuttakeTillRotation(2.75, 0.5, 90, true);
-
-        robot.turnRightTillDegrees(270, true);
-
-        robot.driveForwardTillRotation(2, 0.5, 270, true);
-
-        robot.unlockLiftMotor();
 
     }
 

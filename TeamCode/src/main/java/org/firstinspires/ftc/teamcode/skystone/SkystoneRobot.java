@@ -41,7 +41,7 @@ public class SkystoneRobot {
     // Neverest 40 moteos = 1120 tickers per rotation
     final int TICK_PER_WHEEL_ROTATION   = 560;
 
-    final int AUTONOMOUS_DURATION_MSEC  = 29500;
+    final int AUTONOMOUS_DURATION_MSEC  = 29800;
 
     final double INTAKE_POWER           = 0.40;
 
@@ -58,8 +58,6 @@ public class SkystoneRobot {
     final double MIN_TURN_POWER         = 0.15;
     final double MIN_STRAFE_POWER       = 0.20;
     final double TURN_POWER             = 0.45;
-
-
     final double TURN_TOLERANCE         = 3.0;
 
     boolean runningAutonomous           = true;
@@ -468,34 +466,21 @@ public class SkystoneRobot {
             // Adjusting motor power based on gyro position
             // to force the robot to move straight
             if (useGyroToAlign) {
-                double headingChange  = this.getCurrentPositionInDegrees() - targetHeading;
+                double currentPosition = this.getCurrentPositionInDegrees();
+                double headingChange   = currentPosition - targetHeading;
 
-                if (headingChange > 180 && targetHeading < 90) {
-                    headingChange = this.getCurrentPositionInDegrees() - (targetHeading + 360);
-
-
-//                    opMode.telemetry.addData("pos", getCurrentPositionInDegrees());
-//                    opMode.telemetry.addData("targetpos", targetHeading);
-//                    opMode.telemetry.addData("change", headingChange);
-//                    opMode.telemetry.update();
-//                    this.stopAllMotors();
-//                    opMode.sleep(100000);
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
                 }
-
                 powerRight +=  2 * (headingChange / 100);
                 powerLeft  -=  2 * (headingChange / 100);
 
             }
 
-            opMode.telemetry.addData( "power", power);
-            opMode.telemetry.update();
-
             motorFR.setPower( powerRight );
             motorFL.setPower( powerLeft );
             motorBR.setPower( powerRight );
             motorBL.setPower( powerLeft );
-
-
 
         }
 
@@ -534,19 +519,6 @@ public class SkystoneRobot {
 
             double powerRight = power;
             double powerLeft  = power;
-
-            // Adjusting motor power based on gyro position
-            // to force the robot to move straight
-            if (useGyroToAlign && this.gyro != null) {
-                double headingChange  = getCurrentHeading() - initHeading;
-
-
-                powerRight += power * (-1 * headingChange / 100);
-                powerLeft  += power * (-1 * headingChange / 100);
-            }
-
-            opMode.telemetry.addData( "power", power);
-            opMode.telemetry.update();
 
             motorFR.setPower( powerRight );
             motorFL.setPower( powerLeft );
@@ -651,20 +623,15 @@ public class SkystoneRobot {
             // Adjusting motor power based on gyro position
             // to force the robot to move straight
             if (useGyroToAlign) {
-                double headingChange  = this.getCurrentPositionInDegrees() - targetHeading;
-                if (headingChange > 180 && targetHeading < 90)
-                    headingChange = this.getCurrentPositionInDegrees() - (targetHeading + 360);
+                double currentPosition = this.getCurrentPositionInDegrees();
+                double headingChange   = currentPosition - targetHeading;
 
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
+                }
                 powerRight +=  2 * (headingChange / 100);
                 powerLeft  -=  2 * (headingChange / 100);
-
-//                opMode.telemetry.addData("headingChange", headingChange);
-
             }
-
-//            opMode.telemetry.addData("powerRight", powerRight);
-//            opMode.telemetry.addData("powerLeft", powerLeft);
-//            opMode.telemetry.update();
 
             motorFR.setPower( powerRight );
             motorFL.setPower( powerLeft );
@@ -744,7 +711,7 @@ public class SkystoneRobot {
     public void turnRightTillDegrees( int targetDegrees, boolean stopMotors )
     {
         double targetPower = TURN_POWER;
-        double power = 0.05;
+        double power = 0.15;
         double currentHeading = 0;
         double degressToGo = 0;
 
@@ -777,22 +744,18 @@ public class SkystoneRobot {
     public void turnLeftTillDegrees( int targetDegrees, boolean stopMotors )
     {
         double targetPower = TURN_POWER;
-        double power = 0.05;
+        double power = 0.10;
         double currentHeading = 0;
         double degressToGo = 0;
 
         while (continueAutonomus()) {
 
             currentHeading = getCurrentPositionInDegrees();
-            if (currentHeading < 90) {
-               currentHeading += 360;
-            }
-
-            if (currentHeading > 270 && targetDegrees < 90) {
-                targetDegrees += 360;
-            }
 
             degressToGo = currentHeading - targetDegrees;
+
+            if (degressToGo < -120)
+                degressToGo += 360;
 
             if (degressToGo <= TURN_TOLERANCE)
                 break;
@@ -1060,7 +1023,6 @@ public class SkystoneRobot {
         int initPosition        = motorFR.getCurrentPosition();
         int ticksToGo           = 0;
         double power            = 0.0;
-        double intakePower      = 0.25;
 
         while (continueAutonomus()) {
 
@@ -1077,14 +1039,15 @@ public class SkystoneRobot {
             // Adjusting motor power based on gyro position
             // to force the robot to move straight
             if (useGyroToAlign) {
-                double headingChange  = this.getCurrentPositionInDegrees() - targetHeading;
+                double currentPosition = this.getCurrentPositionInDegrees();
+                double headingChange   = currentPosition - targetHeading;
 
-                if (headingChange > 180 && targetHeading < 90) {
-                    headingChange = this.getCurrentPositionInDegrees() - (targetHeading + 360);
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
                 }
-
                 powerRight +=  2 * (headingChange / 100);
                 powerLeft  -=  2 * (headingChange / 100);
+
             }
 
             motorFR.setPower( powerRight );
@@ -1092,22 +1055,26 @@ public class SkystoneRobot {
             motorBR.setPower( powerRight );
             motorBL.setPower( powerLeft );
 
-            if (ticksToGo <= TICK_PER_WHEEL_ROTATION) {
-                motorIntakeRight.setPower(0.10);
-                motorIntakeLeft.setPower(0.10);
-            } else {
-                motorIntakeRight.setPower(0.25);
-                motorIntakeLeft.setPower(0.25);
+            double intakePower = 0.0;
+            if (ticksToGo <= TICK_PER_WHEEL_ROTATION ) {
+                intakePower = 0.10;
+            } else if (ticksToGo <= TICK_PER_WHEEL_ROTATION * 2.0) {
+                intakePower = 0.20;
+            } else if (ticksToGo <= TICK_PER_WHEEL_ROTATION * 4.0) {
+                intakePower = 0.25;
             }
+
+            motorIntakeRight.setPower(intakePower);
+            motorIntakeLeft.setPower(intakePower);
         }
 
         if (stopMotors) {
             this.stopAllMotors();
 
-            motorIntakeRight.setPower(0.0);
-            motorIntakeLeft.setPower(0.0);
-
+            motorIntakeRight.setPower(0.20);
+            motorIntakeLeft.setPower(0.20);
         }
+
 
 
     }
