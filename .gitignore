@@ -6,6 +6,8 @@
 .settings
 **/build/*
 **/.gradle/*
+**/.gradle
+**/libs
 
 # Package Files #
 *.jar
