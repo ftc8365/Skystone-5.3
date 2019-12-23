@@ -1,0 +1,16 @@
+**/target/
+/target/
+*/target/*
+.classpath
+.project
+.settings
+**/build/*
+**/.gradle/*
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+*.iml
+*.idea
