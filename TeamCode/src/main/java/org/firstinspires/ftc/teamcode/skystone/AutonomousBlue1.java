@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.skystone;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 
 /**
@@ -47,7 +48,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Autonomous Blue 1", group="Autonomous")
-//@Disabled
+@Disabled
 public class AutonomousBlue1 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////

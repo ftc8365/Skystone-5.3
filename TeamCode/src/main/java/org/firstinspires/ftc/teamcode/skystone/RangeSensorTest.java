@@ -49,7 +49,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @TeleOp(name="TEST MR Range Sensor", group="Test")
 @Disabled
-
 public class RangeSensorTest extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();
