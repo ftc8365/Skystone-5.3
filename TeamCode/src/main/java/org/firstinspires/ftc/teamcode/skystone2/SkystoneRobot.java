@@ -224,7 +224,7 @@ public class SkystoneRobot {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // initLitMotors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void initLitMotors() {
+    public void initLiftMotors() {
 
 /*        motorLift  = opMode.hardwareMap.get(DcMotor.class, "motorLift");
         motorLift.setDirection(DcMotor.Direction.FORWARD);
@@ -237,8 +237,8 @@ public class SkystoneRobot {
     }
 
     public void initRangeSensors() {
-        rangeSensorFR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensor1");
-        rangeSensorFL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensor2");
+        rangeSensorFR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
+        rangeSensorFL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
     }
 
     public void initColorSensors() {
