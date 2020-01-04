@@ -109,10 +109,10 @@ public class SkystoneDriverControl extends LinearOpMode {
 
     void operateLift(){
         if(gamepad2.right_bumper){
-            robot.servoV4BL.setPosition(0);
+            robot.setServoPosition( robot.servoV4BL, 0, 50);
         }
         if(gamepad2.left_bumper){
-            robot.servoV4BL.setPosition(0.75);
+            robot.setServoPosition( robot.servoV4BL, 1.0, 50);
         }
     }
 

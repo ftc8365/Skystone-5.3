@@ -406,18 +406,18 @@ public class SkystoneRobot {
     }
 
 
-    void setServoPosition(Servo servo, double targetPosition) {
+    void setServoPosition(Servo servo, double targetPosition, int delay) {
         double currentPos = servo.getPosition();
 
         if (currentPos > targetPosition) {
             while (servo.getPosition() > targetPosition) {
                 servo.setPosition(servo.getPosition() - 0.01);
-                opMode.sleep(50);
+                opMode.sleep(delay);
             }
         } else if (currentPos < targetPosition) {
             while (servo.getPosition() < targetPosition) {
                 servo.setPosition(servo.getPosition() + 0.01);
-                opMode.sleep(50);
+                opMode.sleep(delay);
             }
         }
     }
