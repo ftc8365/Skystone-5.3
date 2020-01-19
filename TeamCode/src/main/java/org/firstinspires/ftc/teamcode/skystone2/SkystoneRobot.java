@@ -6,6 +6,7 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -97,8 +98,8 @@ public class SkystoneRobot {
     public DcMotor motorIntakeRight = null;
     public DcMotor motorIntakeLeft  = null;
 
-//    public DcMotor motorGrabber     = null;
-//    public DcMotor motorLift        = null;
+    public DcMotor motorLiftRight  = null;
+    public DcMotor motorLiftLeft   = null;
 
     /////////////////////
     // Declare vuforia tensorflow variables
@@ -145,7 +146,6 @@ public class SkystoneRobot {
 //    DistanceSensor                  distanceSensor  = null;
     IntegratingGyroscope            gyro            = null;
     NavxMicroNavigationSensor       navxMicro       = null;
-
 
     ColorSensor                     colorSensor     = null;
     DistanceSensor                  colorDistance   = null;
@@ -225,15 +225,13 @@ public class SkystoneRobot {
     // initLitMotors
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void initLiftMotors() {
+        motorLiftRight  = opMode.hardwareMap.get(DcMotor.class, "motorLiftRight");
+        motorLiftRight.setDirection(DcMotor.Direction.FORWARD);
+        motorLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-/*        motorLift  = opMode.hardwareMap.get(DcMotor.class, "motorLift");
-        motorLift.setDirection(DcMotor.Direction.FORWARD);
-        motorLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        motorGrabber  = opMode.hardwareMap.get(DcMotor.class, "motorGrabber");
-        motorGrabber.setDirection(DcMotor.Direction.FORWARD);
-        motorGrabber.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
- */
+        motorLiftLeft  = opMode.hardwareMap.get(DcMotor.class, "motorLiftLeft");
+        motorLiftLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void initRangeSensors() {
@@ -263,10 +261,9 @@ public class SkystoneRobot {
         servoV4BL = opMode.hardwareMap.get(Servo.class, "servoV4BL");
     }
 
-    public void initAttachmentServos() {
-//        servoFoundation = opMode.hardwareMap.get(Servo.class, "servo0");
-//        servoLiftGrabber = opMode.hardwareMap.get(Servo.class, "servo1");
-//        servoLiftRotator = opMode.hardwareMap.get(Servo.class, "servo2");
+    public void initFoundationServos() {
+        this.servoFoundationRight = opMode.hardwareMap.get(Servo.class, "servoFoundationRight");
+        this.servoFoundationLeft = opMode.hardwareMap.get(Servo.class, "servoFoundationLeft");
     }
 
 
@@ -1080,13 +1077,18 @@ public class SkystoneRobot {
     }
 
     public void lowerFoundationServos() {
-        servoFoundationLeft.setPosition(0.00);
+        servoFoundationLeft.setPosition(1.00);
         servoFoundationRight.setPosition(0.00);
     }
 
     public void raiseFoundationServos() {
-        servoFoundationLeft.setPosition(0.00);
-        servoFoundationRight.setPosition(0.00);
+        servoFoundationLeft.setPosition(0.35);
+        servoFoundationRight.setPosition(0.65);
+    }
+
+    public void raiseLift() {
+        this.motorLiftRight.setPower(0.50);
+        this.motorLiftLeft.setPower(0.50);
     }
 
 

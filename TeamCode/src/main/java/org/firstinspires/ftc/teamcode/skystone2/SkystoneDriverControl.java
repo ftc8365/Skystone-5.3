@@ -76,6 +76,8 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.initDriveMotors();
         robot.initIntakeMotors();
         robot.initLiftServos();
+        robot.initLiftMotors();
+        robot.initFoundationServos();
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("",  "------------------------------");
@@ -89,7 +91,7 @@ public class SkystoneDriverControl extends LinearOpMode {
             operateIntake();
             operateDriveTrain();
             operateLift();
-//            operateFoundation();
+            operateFoundation();
 
             telemetry.update();
         }
@@ -108,12 +110,36 @@ public class SkystoneDriverControl extends LinearOpMode {
     }
 
     void operateLift(){
-        if(gamepad2.right_bumper){
-            robot.setServoPosition( robot.servoV4BL, 0, 50);
+        double y = gamepad2.right_stick_y;
+        double power = 0;
+
+        if ( Math.abs(y) > 0.01) {
+            power = y;
+
+            robot.motorLiftRight.setPower( power );
+            robot.motorLiftLeft.setPower( power );
+
+            this.liftState = power < -0.01 ? LiftState.LIFT_UP : LiftState.LIFT_DOWN;
         }
-        if(gamepad2.left_bumper){
-            robot.setServoPosition( robot.servoV4BL, 1.0, 50);
+        else {
+            power = this.liftState == LiftState.LIFT_UP ? -0.10 : 0.00;
+            robot.motorLiftRight.setPower( power );
+            robot.motorLiftLeft.setPower( power );
         }
+        telemetry.addData("power", power);
+        telemetry.addData("liftState", this.liftState);
+
+        if (gamepad2.dpad_up)
+            robot.setServoPosition(robot.servoV4BL, 0.00, 20);
+
+        if (gamepad2.dpad_left)
+            robot.setServoPosition(robot.servoV4BL, 0.25, 20);
+
+        if (gamepad2.dpad_down)
+            robot.setServoPosition(robot.servoV4BL, 0.50, 20);
+
+        if (gamepad2.dpad_right)
+            robot.setServoPosition(robot.servoV4BL, 0.75, 20);
     }
 
     void operateIntake() {
