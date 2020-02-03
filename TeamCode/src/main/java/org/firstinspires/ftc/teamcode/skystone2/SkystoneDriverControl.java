@@ -32,6 +32,8 @@ package org.firstinspires.ftc.teamcode.skystone2;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -52,7 +54,7 @@ public class SkystoneDriverControl extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();
 
-    double DRIVE_NORMAL_POWER_RATIO = 0.60;
+    double DRIVE_NORMAL_POWER_RATIO = 0.80;
     double DRIVE_LOW_POWER_RATIO    = 0.30;
     double TURN_NORMAL_POWER_RATIO  = 0.50;
     double TURN_LOW_POWER_RATIO     = 0.25;
@@ -60,6 +62,14 @@ public class SkystoneDriverControl extends LinearOpMode {
     double liftGrabberPos = 0.0;
     double liftRotatorPos = 0.0;
     boolean useDirectionAware = false;
+
+    double SERVO_POSITION_0 = 0.05;
+    double SERVO_POSITION_BASE = 0.15;
+    double SERVO_POSITION_TOP = 0.50;
+    double SERVO_POSITION_DROP = 0.95;
+
+
+    double lastServoPosition = SERVO_POSITION_BASE;
 
     enum LiftState {
         LIFT_UP,
@@ -75,11 +85,15 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.setRunningAutonomous(false);
         robot.initDriveMotors();
         robot.initIntakeMotors();
-        robot.initLiftServos();
         robot.initLiftMotors();
+        robot.initLiftServos();
         robot.initFoundationServos();
 
+        robot.setV4BLServoPosition(SERVO_POSITION_BASE,0);
+
         while (!opModeIsActive() && !isStopRequested()) {
+            telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("liftState", SERVO_POSITION_BASE);
             telemetry.addData("",  "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
@@ -87,28 +101,38 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() ) {
-
             operateIntake();
             operateDriveTrain();
             operateLift();
             operateFoundation();
 
+            telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
+
+            if (robot.distanceSensor.getDistance(DistanceUnit.CM) < 3.0) {
+                robot.setV4BLServoPosition(SERVO_POSITION_0, 0);
+                robot.lowerGrabber();
+            }
+
             telemetry.update();
         }
 
-        robot.stopDriveMotors();
+        robot.stopAllMotors();
     }
 
+    /////////////////////////////////////////////////////////////////////////////////
+    // operateFoundation
+    /////////////////////////////////////////////////////////////////////////////////
     void operateFoundation(){
         if (gamepad1.right_bumper) {
             robot.lowerFoundationServos();
-        }
-
-        if (gamepad1.left_bumper){
+        } else if (gamepad1.left_bumper) {
             robot.raiseFoundationServos();
         }
     }
 
+    /////////////////////////////////////////////////////////////////////////////////
+    // operateLift
+    /////////////////////////////////////////////////////////////////////////////////
     void operateLift(){
         double y = gamepad2.right_stick_y;
         double power = 0;
@@ -117,45 +141,92 @@ public class SkystoneDriverControl extends LinearOpMode {
             power = y;
 
             robot.motorLiftRight.setPower( power );
-            robot.motorLiftLeft.setPower( power );
+//            robot.motorLiftLeft.setPower( power );
 
             this.liftState = power < -0.01 ? LiftState.LIFT_UP : LiftState.LIFT_DOWN;
         }
         else {
             power = this.liftState == LiftState.LIFT_UP ? -0.10 : 0.00;
             robot.motorLiftRight.setPower( power );
-            robot.motorLiftLeft.setPower( power );
+//            robot.motorLiftLeft.setPower( power );
         }
-        telemetry.addData("power", power);
+
+        if (gamepad2.left_trigger > 0) {
+            robot.lowerGrabber();
+        } else if (gamepad2.right_trigger > 0) {
+            robot.raiseGrabber();
+        }
+
+        if (gamepad2.dpad_left) {
+            if (lastServoPosition == SERVO_POSITION_TOP) {
+                robot.setV4BLServoPosition( SERVO_POSITION_BASE, 40);
+                lastServoPosition = SERVO_POSITION_BASE;
+            }
+            else if (lastServoPosition == SERVO_POSITION_DROP) {
+                robot.setV4BLServoPosition(SERVO_POSITION_TOP, 20);
+                lastServoPosition = SERVO_POSITION_TOP;
+            }
+        }
+        else if (gamepad2.dpad_right) {
+
+            if (lastServoPosition == SERVO_POSITION_TOP) {
+                robot.setV4BLServoPosition(SERVO_POSITION_DROP, 40);
+                lastServoPosition = SERVO_POSITION_DROP;
+            }
+            else if (lastServoPosition == SERVO_POSITION_BASE) {
+                robot.setV4BLServoPosition(SERVO_POSITION_TOP, 20);
+                lastServoPosition = SERVO_POSITION_TOP;
+            }
+        }
+
+        if (gamepad2.dpad_down) {
+            robot.setV4BLServoPosition(SERVO_POSITION_0, 0);
+        }
+
+        telemetry.addData("LiftPower", power);
         telemetry.addData("liftState", this.liftState);
+        telemetry.addData("liftState", lastServoPosition);
 
-        if (gamepad2.dpad_up)
-            robot.setServoPosition(robot.servoV4BL, 0.00, 20);
-
-        if (gamepad2.dpad_left)
-            robot.setServoPosition(robot.servoV4BL, 0.25, 20);
-
-        if (gamepad2.dpad_down)
-            robot.setServoPosition(robot.servoV4BL, 0.50, 20);
-
-        if (gamepad2.dpad_right)
-            robot.setServoPosition(robot.servoV4BL, 0.75, 20);
     }
 
+    /////////////////////////////////////////////////////////////////////////////////
+    // operateIntake
+    /////////////////////////////////////////////////////////////////////////////////
     void operateIntake() {
 
         //////////////////////////////////////////////////////
         // RIGHT TRIGGER ON         => Intake In
         // LEFT  TRIGGER ON         => Intake Out
         //////////////////////////////////////////////////////
-        if ( gamepad1.right_trigger > 0 ) {
+        if ( gamepad1.left_trigger > 0 ) {
             robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN );
-        } else if ( gamepad1.left_trigger > 0 ) {
+        } else if ( gamepad1.right_trigger > 0 ) {
             robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_OUT );
         } else {
             robot.turnIntakeoff();
         }
 
+        /*
+        //////////////////////////////////////////////////////
+        // temporary
+        //////////////////////////////////////////////////////
+
+        if (gamepad1.dpad_up) {
+            robot.servoPoker.setPosition(0);
+            sleep(1000);
+            robot.servoPoker.setPosition(0.5);
+
+        }
+        else if (gamepad1.dpad_down) {
+            robot.servoPoker.setPosition(1);
+            sleep(1000);
+            robot.servoPoker.setPosition(0.5);
+
+        }
+        else if (gamepad1.dpad_right || gamepad1.dpad_left)
+            robot.servoPoker.setPosition(0.5);
+
+        */
     }
 
     void operateDriveTrain() {
@@ -178,14 +249,6 @@ public class SkystoneDriverControl extends LinearOpMode {
         if (gamepad1.x) {
             this.useDirectionAware = true;
         }
-
-        ///////////////////////////////////////////////////////////
-        // Gamepad1 Button Y - for Direction Aware Drive - reset direction
-        ///////////////////////////////////////////////////////////
-//        if (gamepad1.y == true)
-//        {
-//            this.initGyroPosition = gyroSensor.getHeading();
-//        }
 
         double driveStickXValue = gamepad1.left_stick_x;
         double driveStickYValue = gamepad1.left_stick_y;

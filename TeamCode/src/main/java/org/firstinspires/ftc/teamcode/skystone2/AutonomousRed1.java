@@ -32,9 +32,8 @@ package org.firstinspires.ftc.teamcode.skystone2;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
 /**
@@ -49,9 +48,9 @@ import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Camera Test", group="Autonomous")
+@Autonomous(name="Autonomous Red 1", group="Autonomous")
 //@Disabled
-public class CameraTest extends LinearOpMode {
+public class AutonomousRed1 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -61,38 +60,89 @@ public class CameraTest extends LinearOpMode {
 
     ElapsedTime autonomusTimer = new ElapsedTime();
 
-    org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot robot = new org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot();
+    SkystoneRobot robot = new SkystoneRobot();
 
 
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot.AllianceMode.ALLIANCE_RED );
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_RED );
         robot.setOpMode( this );
+        robot.initGyroSensor();
+        robot.initDriveMotors();
+        robot.initFoundationServos();
+        robot.initIntakeServos();
+        robot.initRangeSensors();
         robot.initTensorFlowObjectDetectionWebcam();
-
         robot.initCameraServo();
-        robot.servoCamera.setPosition(0.20);
-
-        int count = 0;
+        robot.raiseFoundationServos();
 
         SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
-        runtime.reset();
-
         while (!opModeIsActive() && !isStopRequested()) {
 
-                skystonePosition = robot.scanSkystone( skystonePosition );
-                telemetry.addData( "Skystone", skystonePosition);
+            skystonePosition = robot.scanSkystone( skystonePosition);
+            telemetry.addData( "Skystone", skystonePosition);
 
-                telemetry.addData( "Time", runtime.seconds());
-                telemetry.addData( "Count", ++count);
 
-                telemetry.addData("",  "------------------------------");
-                telemetry.addData(">", "Press Play to start");
-                telemetry.update();
+            telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
+
+            telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
+            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+            telemetry.addData( "range_sensorFR", robot.rangeSensorFR.rawUltrasonic());
+            telemetry.addData( "range_sensorFL", robot.rangeSensorFL.rawUltrasonic());
+
+            telemetry.addData("",  "------------------------------");
+            telemetry.addData(">", "Press Play to start");
+            telemetry.update();
         }
+
+        double sidewayRotation;
+        double siteLocationDistanceOffset = 0;
+
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+            case SKYSTONE_POSITION_UNKNOWN:
+                sidewayRotation = 1.6;
+                siteLocationDistanceOffset = 0.0;
+                break;
+            case SKYSTONE_POSITION_2:
+                sidewayRotation = 2.8;
+                siteLocationDistanceOffset = 0.75;
+                break;
+            case SKYSTONE_POSITION_3:
+                sidewayRotation = 3.6;
+                siteLocationDistanceOffset = 1.50;
+                break;
+            default:
+                sidewayRotation = 2.0;
+                siteLocationDistanceOffset = 0.0;
+                break;
+        }
+
+        ///////////////////////////////////////
+        // Start of program
+        ///////////////////////////////////////
+
+        robot.resetAutonomousTimer();
+
         robot.shutdownTensorFlow();
+
+        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_1 );
+        robot.servoCamera.setPosition(0);
+
+        //        robot.driveForwardTillRotation(1.35, 0.50, 0,true,false);
+//        robot.driveLeftTillRotation(sidewayRotation, 0.5,0, true, true);
+
+        while (opModeIsActive() ) {
+
+            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+            telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
+            telemetry.update();
+        }
+
 
     }
 

@@ -30,11 +30,9 @@
 package org.firstinspires.ftc.teamcode.skystone2;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-
-import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
 
 
 /**
@@ -49,9 +47,9 @@ import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Camera Test", group="Autonomous")
-//@Disabled
-public class CameraTest extends LinearOpMode {
+@Autonomous(name="Autonomous Test", group="Autonomous")
+@Disabled
+public class AutonomousTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -61,38 +59,81 @@ public class CameraTest extends LinearOpMode {
 
     ElapsedTime autonomusTimer = new ElapsedTime();
 
-    org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot robot = new org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot();
+    SkystoneRobot robot = new SkystoneRobot();
 
 
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot.AllianceMode.ALLIANCE_RED );
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
         robot.setOpMode( this );
-        robot.initTensorFlowObjectDetectionWebcam();
-
+        robot.initGyroSensor();
+        robot.initDriveMotors();
+        robot.initFoundationServos();
+        robot.initRangeSensors();
+//        robot.initTensorFlowObjectDetectionWebcam();
         robot.initCameraServo();
-        robot.servoCamera.setPosition(0.20);
+        robot.raiseFoundationServos();
 
-        int count = 0;
-
-        SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
-
-        runtime.reset();
+        org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot.SkystonePosition skystonePosition = org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
         while (!opModeIsActive() && !isStopRequested()) {
 
-                skystonePosition = robot.scanSkystone( skystonePosition );
-                telemetry.addData( "Skystone", skystonePosition);
+//            skystonePosition = robot.scanSkystone( skystonePosition);
+            telemetry.addData( "Skystone", skystonePosition);
 
-                telemetry.addData( "Time", runtime.seconds());
-                telemetry.addData( "Count", ++count);
+            telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
+            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+            telemetry.addData( "range_sensorFR", robot.rangeSensorFR.rawUltrasonic());
+            telemetry.addData( "range_sensorFL", robot.rangeSensorFL.rawUltrasonic());
 
-                telemetry.addData("",  "------------------------------");
-                telemetry.addData(">", "Press Play to start");
-                telemetry.update();
+            telemetry.addData("",  "------------------------------");
+            telemetry.addData(">", "Press Play to start");
+            telemetry.update();
         }
-        robot.shutdownTensorFlow();
+
+//        robot.shutdownTensorFlow();
+
+
+        robot.driveForwardTillRotation(1.0, 0.40, 0, true, false);
+        robot.turnRightTillDegrees(85, true, false);
+        robot.driveBackwardTillRotation(1.0, 0.40, 90,true, true);
+
+        robot.turnRightTillDegrees(180, true, false);
+
+        robot.driveBackwardTillRotation(1, 0.35, 180,true, true);
+
+        robot.lowerFoundationServos();
+        robot.driveBackwardTillTime(250,0.30,false);
+        robot.driveForwardTillRotation(1, 0.50,180,false, true);
+
+        robot.turnLeftTillDegrees(90, false, true);
+
+        robot.raiseFoundationServos();
+        sleep(100);
+        robot.driveForwardTillRotation(1, 0.40,90, true, true);
+
+        /*
+        robot.driveBackwardTillTime(200, 0.50, false);
+        robot.lowerFoundationServos();
+        robot.driveBackwardTillTime(100, 0.30, false);
+        robot.driveForwardTillRotation(1, 0.50, 0, false, true);
+        robot.turnLeftTillDegrees(270, false,true);
+        robot.raiseFoundationServos();
+*/
+//        robot.driveDiagionalTillRotation( 2, 0.60, true);
+//        robot.turnRightTillDegrees(90, false);
+            //       robot.driveForwardTillRotation(1, 0.30, 90, true);
+
+
+        while (opModeIsActive() ) {
+
+            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+            telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
+            telemetry.update();
+        }
 
     }
 

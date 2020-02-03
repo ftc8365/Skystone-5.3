@@ -32,9 +32,6 @@ package org.firstinspires.ftc.teamcode.skystone2;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-
-import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
 
 
 /**
@@ -49,9 +46,9 @@ import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Camera Test", group="Autonomous")
+@Autonomous(name="Autonomous Red 2", group="Autonomous")
 //@Disabled
-public class CameraTest extends LinearOpMode {
+public class AutonomousRed2 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -61,38 +58,13 @@ public class CameraTest extends LinearOpMode {
 
     ElapsedTime autonomusTimer = new ElapsedTime();
 
-    org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot robot = new org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot();
+    SkystoneRobot robot = new SkystoneRobot();
 
 
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot.AllianceMode.ALLIANCE_RED );
-        robot.setOpMode( this );
-        robot.initTensorFlowObjectDetectionWebcam();
 
-        robot.initCameraServo();
-        robot.servoCamera.setPosition(0.20);
-
-        int count = 0;
-
-        SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
-
-        runtime.reset();
-
-        while (!opModeIsActive() && !isStopRequested()) {
-
-                skystonePosition = robot.scanSkystone( skystonePosition );
-                telemetry.addData( "Skystone", skystonePosition);
-
-                telemetry.addData( "Time", runtime.seconds());
-                telemetry.addData( "Count", ++count);
-
-                telemetry.addData("",  "------------------------------");
-                telemetry.addData(">", "Press Play to start");
-                telemetry.update();
-        }
-        robot.shutdownTensorFlow();
 
     }
 
