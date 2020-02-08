@@ -30,7 +30,6 @@
 package org.firstinspires.ftc.teamcode.skystone2;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -49,9 +48,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Test", group="Autonomous")
-@Disabled
-public class AutonomousTest extends LinearOpMode {
+@Autonomous(name="Auto Red Foundation", group="Autonomous")
+//@Disabled
+public class AutonomousRedFoundation extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -71,15 +70,23 @@ public class AutonomousTest extends LinearOpMode {
         robot.setOpMode( this );
         robot.initGyroSensor();
         robot.initDriveMotors();
+        robot.initIntakeMotors();
         robot.initFoundationServos();
         robot.initIntakeServos();
-        robot.initRangeSensors();
-        robot.initCameraServo();
         robot.initLiftServos();
-        robot.initIntakeMotors();
+        robot.initRangeSensors();
+        robot.initTensorFlowObjectDetectionWebcam();
+        robot.initCameraServo();
         robot.raiseFoundationServos();
 
+
+        SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
+
         while (!opModeIsActive() && !isStopRequested()) {
+
+            skystonePosition = robot.scanSkystone( skystonePosition);
+            telemetry.addData( "Skystone", skystonePosition);
+
 
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
@@ -93,15 +100,64 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
-        robot.driveBackwardTillRange(20,0.30,0,true);
+        double sidewayRotation;
+        double siteLocationDistanceOffset = 0;
+
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+            case SKYSTONE_POSITION_UNKNOWN:
+                sidewayRotation = 1.6;
+                siteLocationDistanceOffset = 0.0;
+                break;
+            case SKYSTONE_POSITION_2:
+                sidewayRotation = 2.8;
+                siteLocationDistanceOffset = 0.75;
+                break;
+            case SKYSTONE_POSITION_3:
+                sidewayRotation = 3.6;
+                siteLocationDistanceOffset = 1.50;
+                break;
+            default:
+                sidewayRotation = 2.0;
+                siteLocationDistanceOffset = 0.0;
+                break;
+        }
+
+        ///////////////////////////////////////
+        // Start of program
+        ///////////////////////////////////////
+
+        robot.resetAutonomousTimer();
+
+        robot.shutdownTensorFlow();
+
+        robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_1 );
+        robot.servoCamera.setPosition(0);
+        robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+        robot.raiseGrabber();
+
+        robot.driveForwardTillRotation(1.35, 0.50, 0,true,false);
+        robot.turnRightTillDegrees(45,false,false);
+
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN );
+        robot.driveForwardTillRotation(2.50, 0.30, 45,true,false);
+        robot.driveBackwardTillRotation(2.50, 0.50, 45,true,true);
+
+        robot.turnIntakeoff();
+
+        if (robot.stoneDetected()) {
+            robot.grabStone();
+        }
+
+
+
+//        robot.driveLeftTillRotation(sidewayRotation, 0.5,0, true, true);
 
         while (opModeIsActive() ) {
 
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
-            telemetry.addData( "range_sensorBR", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData( "range_sensorBL", robot.rangeSensorBL.rawUltrasonic());
             telemetry.update();
         }
 

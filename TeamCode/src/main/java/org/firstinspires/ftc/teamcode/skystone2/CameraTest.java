@@ -50,7 +50,7 @@ import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Camera Test", group="Autonomous")
-//@Disabled
+@Disabled
 public class CameraTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////

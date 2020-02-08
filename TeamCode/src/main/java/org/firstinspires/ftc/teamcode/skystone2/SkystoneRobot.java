@@ -38,7 +38,6 @@ public class SkystoneRobot {
     final int AUTONOMOUS_DURATION_MSEC  = 29800;
 
     final double INTAKE_POWER           = 0.30;
-
     final double RAMP_UP_RATE_DRIVE     = 0.01;
     final double RAMP_UP_RATE_TURN      = 0.01;
     final double RAMP_UP_RATE_STRAFE    = 0.05;
@@ -53,6 +52,24 @@ public class SkystoneRobot {
     final double MIN_STRAFE_POWER       = 0.20;
     final double TURN_POWER             = 0.60;
     final double TURN_TOLERANCE         = 5.0;
+
+
+    enum V4BLState {
+        V4BL_STATE_UNKNOWN      (0.00),
+        V4BL_STATE_STONE        (0.05),
+        V4BL_STATE_INTAKE       (0.20),
+        V4BL_STATE_TOP          (0.55),
+        V4BL_STATE_FOUNDATION   (0.90);
+
+        public final double servoPos;
+
+        V4BLState(double pos) {
+            this.servoPos = pos;
+        }
+    }
+
+    double currentV4BLPos               = 0;
+    V4BLState currentV4BLState          = V4BLState.V4BL_STATE_UNKNOWN;
 
     boolean runningAutonomous           = true;
     AllianceMode allianceMode           = AllianceMode.ALLIANCE_BLUE;
@@ -138,8 +155,8 @@ public class SkystoneRobot {
     // Declare sensors
     /////////////////////
     /////////////////////
-    ModernRoboticsI2cRangeSensor    rangeSensorFR   = null;
-    ModernRoboticsI2cRangeSensor    rangeSensorFL   = null;
+    ModernRoboticsI2cRangeSensor    rangeSensorBR   = null;
+    ModernRoboticsI2cRangeSensor    rangeSensorBL   = null;
 
     DistanceSensor                  distanceSensor  = null;
     IntegratingGyroscope            gyro            = null;
@@ -164,6 +181,7 @@ public class SkystoneRobot {
     Servo servoV4BLUpper        = null;
     Servo servoV4BLLower        = null;
     Servo servoPoker            = null;
+    Servo servoCapstone         = null;
 
 
     LinearOpMode opMode         = null;
@@ -235,8 +253,8 @@ public class SkystoneRobot {
     }
 
     public void initRangeSensors() {
-        rangeSensorFR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
-        rangeSensorFL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
+        rangeSensorBR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
+        rangeSensorBL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
     }
 
     public void initColorSensors() {
@@ -258,12 +276,11 @@ public class SkystoneRobot {
     }
 
     public void initLiftServos() {
-        servoV4BLUpper = opMode.hardwareMap.get(Servo.class, "servoV4BLUpper");
-        servoV4BLLower = opMode.hardwareMap.get(Servo.class, "servoV4BLLower");
-        servoLiftGrabber = opMode.hardwareMap.get(Servo.class, "servoLiftGrabber");
-
-        distanceSensor   = opMode.hardwareMap.get(DistanceSensor.class, "distance_sensor");
-
+        servoV4BLUpper      = opMode.hardwareMap.get(Servo.class, "servoV4BLUpper");
+        servoV4BLLower      = opMode.hardwareMap.get(Servo.class, "servoV4BLLower");
+        servoLiftGrabber    = opMode.hardwareMap.get(Servo.class, "servoLiftGrabber");
+        servoCapstone       = opMode.hardwareMap.get(Servo.class, "servoCapstone");
+        distanceSensor      = opMode.hardwareMap.get(DistanceSensor.class, "distance_sensor");
     }
 
     public void initFoundationServos() {
@@ -424,7 +441,23 @@ public class SkystoneRobot {
         }
     }
 
-    void setV4BLServoPosition(double targetPosition, int delay) {
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // setV4BLServoPosition
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void setV4BLState(V4BLState targetState, int delay) {
+        setV4BLPosition(targetState.servoPos, delay);
+        this.currentV4BLState = targetState;
+    }
+
+    void offsetV4BLPosition(double offset, int delay) {
+//        setV4BLPosition( 0.15,this.currentV4BLPos + offset, delay );
+        setV4BLPosition( 0.15, delay );
+    }
+
+    void setV4BLPosition(double targetPosition, int delay) {
+        if (targetPosition > 1.0 || targetPosition < 0.0)
+            return;
+
         double currentPos = servoV4BLUpper.getPosition();
 
         if (currentPos > targetPosition) {
@@ -442,7 +475,10 @@ public class SkystoneRobot {
                 opMode.sleep(delay);
             }
         }
+
+        this.currentV4BLPos = targetPosition;
     }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // stopAllMotors
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -718,17 +754,17 @@ public class SkystoneRobot {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // driveForwardTillRotation
+    // driveBackwardTillRange
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveForwardTillRange( double range, double targetPower, int targetHeading, boolean stopMotors )
+    public void driveBackwardTillRange( double range, double targetPower, int targetHeading, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         double power            = 0.0;
 
         while (continueAutonomus()) {
 
-            double rangeFR = this.rangeSensorFR.rawUltrasonic();
-            double rangeFL = this.rangeSensorFL.rawUltrasonic();
+            double rangeFR = this.rangeSensorBR.rawUltrasonic();
+            double rangeFL = this.rangeSensorBL.rawUltrasonic();
 
             double minRange = Math.min(rangeFR, rangeFL);
 
@@ -753,10 +789,10 @@ public class SkystoneRobot {
                 powerLeft  -=  2 * (headingChange / 100);
             }
 
-            motorFR.setPower( powerRight );
-            motorFL.setPower( powerLeft );
-            motorBR.setPower( powerRight );
-            motorBL.setPower( powerLeft );
+            motorFR.setPower( -1 * powerRight );
+            motorFL.setPower( -1 * powerLeft );
+            motorBR.setPower( -1 * powerRight );
+            motorBL.setPower( -1 * powerLeft );
         }
 
         if (stopMotors) {
@@ -1052,11 +1088,11 @@ public class SkystoneRobot {
     public void turnIntakeOn( IntakeDirection direction ) {
 
         if (direction == IntakeDirection.INTAKE_DIRECTION_IN) {
-            motorIntakeRight.setPower(INTAKE_POWER);
-            motorIntakeLeft.setPower(INTAKE_POWER);
-        } else {
             motorIntakeRight.setPower(-1 * INTAKE_POWER);
             motorIntakeLeft.setPower(-1 * INTAKE_POWER);
+        } else {
+            motorIntakeRight.setPower(INTAKE_POWER);
+            motorIntakeLeft.setPower(INTAKE_POWER);
         }
     }
 
@@ -1213,7 +1249,6 @@ public class SkystoneRobot {
     }
 
 
-
     public void lowerFoundationServos() {
         servoFoundationLeft.setPosition(1.00);
         servoFoundationRight.setPosition(0.00);
@@ -1227,6 +1262,48 @@ public class SkystoneRobot {
     public void raiseLift() {
         this.motorLiftRight.setPower(0.50);
 //        this.motorLiftLeft.setPower(0.50);
+    }
+
+    public boolean stoneDetected() {
+        return (distanceSensor.getDistance(DistanceUnit.CM) < 3.0);
+    }
+
+    public void grabStone() {
+        setV4BLState(V4BLState.V4BL_STATE_STONE, 20);
+        lowerGrabber();
+//        raiseGrabber();
+//        setV4BLServoPosition(V4BL_POSITION_1, 20);
+//        setV4BLServoPosition(V4BL_POSITION_0, 20);
+//        lowerGrabber();
+    }
+
+    public void dropStone() {
+        setV4BLState(V4BLState.V4BL_STATE_TOP, 15);
+        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION, 30);
+
+        try {
+            Thread.sleep(500);
+            raiseGrabber();
+            Thread.sleep(500);
+
+            setV4BLState(V4BLState.V4BL_STATE_TOP, 15);
+            setV4BLState(V4BLState.V4BL_STATE_INTAKE, 30);
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    public V4BLState getV4BLState() {
+        return this.currentV4BLState;
+    }
+
+    public double getV4BLServoPosition() {
+        return this.currentV4BLState.servoPos;
+    }
+
+    public boolean isV4BLState( V4BLState state ) {
+        return ((Math.abs(this.currentV4BLPos - state.servoPos)) <= 0.05);
     }
 
 

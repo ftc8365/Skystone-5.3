@@ -48,9 +48,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Red 1", group="Autonomous")
+@Autonomous(name="Auto Blue Stone", group="Autonomous")
 //@Disabled
-public class AutonomousRed1 extends LinearOpMode {
+public class AutonomousBlueStone extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -66,16 +66,19 @@ public class AutonomousRed1 extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_RED );
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
         robot.setOpMode( this );
         robot.initGyroSensor();
         robot.initDriveMotors();
+        robot.initIntakeMotors();
         robot.initFoundationServos();
         robot.initIntakeServos();
+        robot.initLiftServos();
         robot.initRangeSensors();
         robot.initTensorFlowObjectDetectionWebcam();
         robot.initCameraServo();
         robot.raiseFoundationServos();
+
 
         SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
@@ -86,12 +89,11 @@ public class AutonomousRed1 extends LinearOpMode {
 
 
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
-
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData( "range_sensorFR", robot.rangeSensorFR.rawUltrasonic());
-            telemetry.addData( "range_sensorFL", robot.rangeSensorFL.rawUltrasonic());
+            telemetry.addData( "range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
+            telemetry.addData( "range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
 
             telemetry.addData("",  "------------------------------");
             telemetry.addData(">", "Press Play to start");
@@ -131,8 +133,24 @@ public class AutonomousRed1 extends LinearOpMode {
 
         robot.setLatchPosition( SkystoneRobot.LatchPosition.LATCH_POSITION_1 );
         robot.servoCamera.setPosition(0);
+        robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+        robot.raiseGrabber();
 
-        //        robot.driveForwardTillRotation(1.35, 0.50, 0,true,false);
+        robot.driveForwardTillRotation(1.35, 0.50, 0,true,false);
+        robot.turnRightTillDegrees(45,false,false);
+
+        robot.turnIntakeOn( SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN );
+        robot.driveForwardTillRotation(2.50, 0.30, 45,true,false);
+        robot.driveBackwardTillRotation(2.50, 0.50, 45,true,true);
+
+        robot.turnIntakeoff();
+
+        if (robot.stoneDetected()) {
+            robot.grabStone();
+        }
+
+
+
 //        robot.driveLeftTillRotation(sidewayRotation, 0.5,0, true, true);
 
         while (opModeIsActive() ) {

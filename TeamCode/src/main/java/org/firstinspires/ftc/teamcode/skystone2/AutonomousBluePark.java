@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -46,9 +48,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Red 2", group="Autonomous")
+@Autonomous(name="Auto Blue Park", group="Autonomous")
 //@Disabled
-public class AutonomousRed2 extends LinearOpMode {
+public class AutonomousBluePark extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -64,7 +66,23 @@ public class AutonomousRed2 extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
+        robot.setOpMode( this );
+        robot.initDriveMotors();
 
+        while (!opModeIsActive() && !isStopRequested()) {
+
+
+            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+            telemetry.addData("",  "------------------------------");
+            telemetry.addData(">", "Press Play to start");
+            telemetry.update();
+        }
+
+        ///////////////////////////////////////
+        // Start of program
+        ///////////////////////////////////////
 
     }
 
