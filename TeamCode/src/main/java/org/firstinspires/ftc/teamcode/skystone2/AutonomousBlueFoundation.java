@@ -139,37 +139,41 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         // Start of program
         ///////////////////////////////////////
 
-        switch (nextAutoStep) {
-            case AUTO_STEP_0:
-                startAuto();
-                nextAutoStep = AutoStep.AUTO_STEP_1;
-                break;
-
-            case AUTO_STEP_1:
-                grabSkystone();
-                nextAutoStep = AutoStep.AUTO_STEP_2;
-                break;
-
-            case AUTO_STEP_2:
-                nextAutoStep = AutoStep.AUTO_STEP_3;
-                break;
-            case AUTO_STEP_3:
-                nextAutoStep = AutoStep.AUTO_STEP_4;
-                break;
-            case AUTO_STEP_4:
-                nextAutoStep = AutoStep.AUTO_STEP_5;
-                break;
-            case AUTO_STEP_5:
-                nextAutoStep = AutoStep.AUTO_STEP_6;
-                break;
-            case AUTO_STEP_6:
-                nextAutoStep = AutoStep.AUTO_STEP_7;
-                break;
-            case AUTO_STEP_7:
-                break;
-        }
 
         while (opModeIsActive()) {
+
+            switch (nextAutoStep) {
+                case AUTO_STEP_0:
+                    startAuto();
+                    nextAutoStep = AutoStep.AUTO_STEP_1;
+                    break;
+
+                case AUTO_STEP_1:
+                    grabSkystone();
+                    nextAutoStep = AutoStep.AUTO_STEP_2;
+                    break;
+
+                case AUTO_STEP_2:
+                    grabFoundation();
+                    nextAutoStep = AutoStep.AUTO_STEP_3;
+                    break;
+                case AUTO_STEP_3:
+                    dropSkystone();
+                    nextAutoStep = AutoStep.AUTO_STEP_4;
+                    break;
+                case AUTO_STEP_4:
+                    turnFoundation();
+                    nextAutoStep = AutoStep.AUTO_STEP_5;
+                    break;
+                case AUTO_STEP_5:
+                    nextAutoStep = AutoStep.AUTO_STEP_6;
+                    break;
+                case AUTO_STEP_6:
+                    nextAutoStep = AutoStep.AUTO_STEP_7;
+                    break;
+                case AUTO_STEP_7:
+                    break;
+            }
 
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
@@ -194,8 +198,8 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.turnRightTillDegrees(45, false, false);
 
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-        robot.driveForwardTillRotation(2.50, 0.30, 45, true, false);
-        robot.driveBackwardTillRotation(2.50, 0.50, 45, true, true);
+        robot.driveForwardTillRotation(2.50, 0.40, 45, true, false);
+        robot.driveBackwardTillRotation(2.00, 0.50, 45, true, true);
 
         robot.turnIntakeoff();
 
@@ -203,6 +207,27 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             robot.grabStone();
         }
 
+    }
+
+    void grabFoundation(){
+        robot.turnRightTillDegrees(90,true, true);
+//        robot.driveBackwardTillRotation(4.75,0.5,90,true,true);
+        robot.driveBackwardTillRange(30, 0.50, 90, true);
+
+        robot.turnRightTillDegrees(180,true,true);
+        robot.driveBackwardTillTime(1000,0.3,true);
+        robot.lowerFoundationServos();
+    }
+
+    void dropSkystone(){
+        robot.dropStone();
+    }
+
+    void turnFoundation(){
+        robot.driveForwardTillRotation(1.75,0.6,180,true,true);
+        robot.turnLeftTillDegrees(90,true,true);
+        robot.raiseFoundationServos();
+        robot.driveForwardTillRotation(2,0.4,90,true,true);
     }
 
 

@@ -50,7 +50,7 @@ public class SkystoneRobot {
     final double MIN_DRIVE_POWER        = 0.10;
     final double MIN_TURN_POWER         = 0.15;
     final double MIN_STRAFE_POWER       = 0.20;
-    final double TURN_POWER             = 0.60;
+    final double TURN_POWER             = 0.70;
     final double TURN_TOLERANCE         = 5.0;
 
 
@@ -759,14 +759,14 @@ public class SkystoneRobot {
     public void driveBackwardTillRange( double range, double targetPower, int targetHeading, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
-        double power            = 0.0;
+        double power            = 0.10;
 
         while (continueAutonomus()) {
 
-            double rangeFR = this.rangeSensorBR.rawUltrasonic();
-            double rangeFL = this.rangeSensorBL.rawUltrasonic();
+            double rangeBR = this.rangeSensorBR.rawUltrasonic();
+            double rangeBL = this.rangeSensorBL.rawUltrasonic();
 
-            double minRange = Math.min(rangeFR, rangeFL);
+            double minRange = Math.min(rangeBR, rangeBL);
 
             if (minRange <= range )
                 break;
@@ -1015,7 +1015,6 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private double getDriveRangePower( double curPower, double range, double targetPower ) {
         double power = curPower;
-
 
         // Ramp down power
         if ( range <= RAMP_DOWN_DRIVE_RANGE ) {
@@ -1284,7 +1283,7 @@ public class SkystoneRobot {
         try {
             Thread.sleep(500);
             raiseGrabber();
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             setV4BLState(V4BLState.V4BL_STATE_TOP, 15);
             setV4BLState(V4BLState.V4BL_STATE_INTAKE, 30);
