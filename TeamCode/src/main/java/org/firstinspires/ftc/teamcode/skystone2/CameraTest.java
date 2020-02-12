@@ -50,7 +50,7 @@ import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Camera Test", group="Autonomous")
-@Disabled
+//@Disabled
 public class CameraTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ public class CameraTest extends LinearOpMode {
         robot.initTensorFlowObjectDetectionWebcam();
 
         robot.initCameraServo();
-        robot.servoCamera.setPosition(0.20);
+        robot.servoCamera.setPosition(0.0);
 
         int count = 0;
 
@@ -82,7 +82,7 @@ public class CameraTest extends LinearOpMode {
 
         while (!opModeIsActive() && !isStopRequested()) {
 
-                skystonePosition = robot.scanSkystone( skystonePosition );
+//                skystonePosition = robot.scanSkystone( skystonePosition );
                 telemetry.addData( "Skystone", skystonePosition);
 
                 telemetry.addData( "Time", runtime.seconds());
@@ -92,7 +92,28 @@ public class CameraTest extends LinearOpMode {
                 telemetry.addData(">", "Press Play to start");
                 telemetry.update();
         }
+
+
+        double cameraPos = 0.40;
+
+        while (opModeIsActive() ) {
+
+            if (gamepad1.dpad_up) {
+                cameraPos += 0.02;
+                robot.servoCamera.setPosition(cameraPos);
+                sleep(500);
+            }
+            else if (gamepad1.dpad_down) {
+                cameraPos -= 0.02;
+                robot.servoCamera.setPosition(cameraPos);
+                sleep(500);
+            }
+            telemetry.addData( "Camera Pos", cameraPos);
+            telemetry.update();
+        }
+
         robot.shutdownTensorFlow();
+
 
     }
 

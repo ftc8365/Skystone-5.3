@@ -104,8 +104,6 @@ public class SkystoneDriverControl extends LinearOpMode {
             operateLift();
             operateFoundation();
 
-            telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
-
             telemetry.update();
         }
 
@@ -271,7 +269,6 @@ public class SkystoneDriverControl extends LinearOpMode {
         }
 
 
-        /*
         //////////////////////////////////////////////////////
         // temporary
         //////////////////////////////////////////////////////
@@ -288,10 +285,10 @@ public class SkystoneDriverControl extends LinearOpMode {
             robot.servoPoker.setPosition(0.5);
 
         }
-        else if (gamepad1.dpad_right || gamepad1.dpad_left)
+        else if (gamepad1.dpad_right || gamepad1.dpad_left) {
             robot.servoPoker.setPosition(0.5);
+        }
 
-        */
     }
 
     void operateDriveTrain() {

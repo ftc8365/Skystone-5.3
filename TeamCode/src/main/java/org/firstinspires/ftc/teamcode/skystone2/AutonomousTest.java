@@ -50,7 +50,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Autonomous Test", group="Autonomous")
-@Disabled
+//@Disabled
 public class AutonomousTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
@@ -79,6 +79,9 @@ public class AutonomousTest extends LinearOpMode {
         robot.initIntakeMotors();
         robot.raiseFoundationServos();
 
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+        robot.raiseGrabber();
+
         while (!opModeIsActive() && !isStopRequested()) {
 
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
@@ -87,13 +90,34 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData( "range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
             telemetry.addData( "range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
+            telemetry.addData("V4BLState", robot.getV4BLState());
+            telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
 
             telemetry.addData("",  "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
         }
 
-        robot.driveBackwardTillRange(20,0.30,0,true);
+
+        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+        robot.driveForwardTillRotation(1.80,0.40,0, true, false);
+        robot.turnRightTillDegrees(90, false, false);
+        robot.driveLeftTillRotation(1.0,.50, 90, false, false);
+        robot.driveForwardTillRotation(0.50,0.30,90, false, true);
+        sleep(500);
+
+        if (robot.stoneDetected()) {
+            robot.grabStone();
+        }
+
+        robot.driveRightTillRotation(1.0,0.50,90, false, true);
+
+
+        robot.turnIntakeoff();
+
+
+
 
         while (opModeIsActive() ) {
 
