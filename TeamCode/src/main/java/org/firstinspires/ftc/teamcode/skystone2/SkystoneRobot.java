@@ -57,7 +57,7 @@ public class SkystoneRobot {
     enum V4BLState {
         V4BL_STATE_UNKNOWN      (0.00),
         V4BL_STATE_STONE        (0.05),
-        V4BL_STATE_INTAKE       (0.20),
+        V4BL_STATE_INTAKE       (0.23),
         V4BL_STATE_TOP          (0.55),
         V4BL_STATE_FOUNDATION   (0.90);
 
