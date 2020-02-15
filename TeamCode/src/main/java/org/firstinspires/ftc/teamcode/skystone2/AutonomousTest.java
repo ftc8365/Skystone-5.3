@@ -79,8 +79,10 @@ public class AutonomousTest extends LinearOpMode {
         robot.initIntakeMotors();
         robot.raiseFoundationServos();
 
-        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
-        robot.raiseGrabber();
+//        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+//        robot.raiseGrabber();
+
+//        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL);
 
         while (!opModeIsActive() && !isStopRequested()) {
 
@@ -98,25 +100,11 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
+//        robot.turnRightTillDegrees(80, false, false);
+//        robot.driveBackwardTillRange(40, 0.35, 90, true);
+//        robot.turnRightTillDegrees(180, true, true);
 
-        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-
-        robot.driveForwardTillRotation(1.80,0.40,0, true, false);
-        robot.turnRightTillDegrees(90, false, false);
-        robot.driveLeftTillRotation(1.0,.50, 90, false, false);
-        robot.driveForwardTillRotation(0.50,0.30,90, false, true);
-        sleep(500);
-
-        if (robot.stoneDetected()) {
-            robot.grabStone();
-        }
-
-        robot.driveRightTillRotation(1.0,0.50,90, false, true);
-
-
-        robot.turnIntakeoff();
-
-
+        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
 
 
         while (opModeIsActive() ) {

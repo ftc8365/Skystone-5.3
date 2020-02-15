@@ -62,18 +62,6 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();
 
-    enum AutoStep {
-        AUTO_STEP_0,
-        AUTO_STEP_1,
-        AUTO_STEP_2,
-        AUTO_STEP_3,
-        AUTO_STEP_4,
-        AUTO_STEP_5,
-        AUTO_STEP_6,
-        AUTO_STEP_7
-    }
-
-    AutoStep nextAutoStep = AutoStep.AUTO_STEP_0;
     SkystoneRobot.SkystonePosition skystonePosition = SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_UNKNOWN;
 
     @Override
@@ -88,6 +76,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.initIntakeServos();
         robot.initLiftServos();
         robot.initRangeSensors();
+        robot.initColorSensors();
         robot.initTensorFlowObjectDetectionWebcam();
         robot.initCameraServo();
         robot.raiseFoundationServos();
@@ -101,7 +90,6 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             skystonePosition = robot.scanSkystone(skystonePosition);
             telemetry.addData("Skystone", skystonePosition);
 
-
             telemetry.addData("distance", robot.distanceSensor.getDistance(DistanceUnit.CM));
             telemetry.addData("Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
@@ -109,83 +97,33 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             telemetry.addData("range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
             telemetry.addData("range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
 
+
+
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
         }
 
-        double sidewayRotation;
-        double siteLocationDistanceOffset = 0;
-
-        switch (skystonePosition) {
-            case SKYSTONE_POSITION_1:
-            case SKYSTONE_POSITION_UNKNOWN:
-                sidewayRotation = 1.6;
-                siteLocationDistanceOffset = 0.0;
-                break;
-            case SKYSTONE_POSITION_2:
-                sidewayRotation = 2.8;
-                siteLocationDistanceOffset = 0.75;
-                break;
-            case SKYSTONE_POSITION_3:
-                sidewayRotation = 3.6;
-                siteLocationDistanceOffset = 1.50;
-                break;
-            default:
-                sidewayRotation = 2.0;
-                siteLocationDistanceOffset = 0.0;
-                break;
-        }
 
         ///////////////////////////////////////
         // Start of program
         ///////////////////////////////////////
 
-        boolean autoDone = false;
+        startAuto();
 
-        while (!autoDone && opModeIsActive()) {
+        ////////////////
+        // STEP 1
+        ////////////////
+        grabSkystone();
 
-            switch (nextAutoStep) {
-                case AUTO_STEP_0:
-                    startAuto();
-                    nextAutoStep = AutoStep.AUTO_STEP_1;
-                    break;
+        ////////////////
+        // STEP 2
+        ////////////////
+        grabFoundation();
 
-                case AUTO_STEP_1:
-                    grabSkystone();
-                    nextAutoStep = AutoStep.AUTO_STEP_2;
-                    autoDone = true;
-                    break;
-
-                case AUTO_STEP_2:
-//                    grabFoundation();
-                    nextAutoStep = AutoStep.AUTO_STEP_3;
-                    break;
-
-                case AUTO_STEP_3:
-//                    dropSkystone();
-                    nextAutoStep = AutoStep.AUTO_STEP_4;
-                    break;
-
-                case AUTO_STEP_4:
-//                    turnFoundation();
-                    nextAutoStep = AutoStep.AUTO_STEP_5;
-                    break;
-
-                case AUTO_STEP_5:
-//                    moveUnderAllianceBridge();
-                    nextAutoStep = AutoStep.AUTO_STEP_6;
-                    break;
-
-                case AUTO_STEP_6:
-                    nextAutoStep = AutoStep.AUTO_STEP_7;
-                    break;
-
-                case AUTO_STEP_7:
-                    autoDone = true;
-                    break;
-            }
-        }
+        turnFoundation();
+        dropSkystone();
+        moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
     }
@@ -199,65 +137,88 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
     void grabSkystone() {
 
-        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
-
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
+        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+
         switch (skystonePosition) {
-            case SKYSTONE_POSITION_2:
-                robot.driveForwardTillRotation(1.50, 0.30, 0, true, true);
-                robot.driveBackwardTillRotation(0.75, 0.50, 0, false, false);
-                robot.turnRightTillDegrees(80, false, true);
+            case SKYSTONE_POSITION_1:
+                robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
+                robot.driveBackwardTillRotation(1.20, 0.50, 0, true, true);
                 break;
 
-            case SKYSTONE_POSITION_1:
-                robot.turnRightTillDegrees(85, false, false);
-                robot.driveBackwardTillRotation(0.25, 0.50, 90, true, true);
+            case SKYSTONE_POSITION_2:
+                robot.turnRightTillDegrees(90, true, false);
+                robot.driveBackwardTillRotation(0.25, 0.50, 90, false, false);
+                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
+                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
+                sleep(250);
+                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
+                break;
+
+            case SKYSTONE_POSITION_3:
+                robot.turnRightTillDegrees(90, true, false);
+                robot.driveForwardTillRotation(0.25, 0.50, 90, false, false);
+                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
+                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
+                sleep(250);
+                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
                 break;
         }
 
-
-
-/*
-
-        robot.driveForwardTillRotation(0.5,0.40,90,true,false);
-
-        robot.driveLeftTillRotation(1.3,.50, 90, false, false);
-        robot.driveForwardTillRotation(0.50,0.30,90, false, true);
-        robot.driveRightTillRotation(1.2,0.50,90, false, true);
-*/
         robot.turnIntakeoff();
 
         if (robot.stoneDetected()) {
             robot.grabStone();
         }
 
-        sleep(1000);
+        robot.turnRightTillDegrees(80, false, true);
 
     }
 
-    void grabFoundation(){
-        robot.turnRightTillDegrees(90,true, true);
-//        robot.driveBackwardTillRotation(4.75,0.5,90,true,true);
-        robot.driveBackwardTillRange(30, 0.50, 90, true);
+    void grabFoundation() {
 
-        robot.turnRightTillDegrees(180,true,true);
-        robot.driveBackwardTillTime(1000,0.3,true);
+        double distanceToGo = 3.75;
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+                distanceToGo = 3.75;
+                break;
+
+            case SKYSTONE_POSITION_2:
+                distanceToGo = 4.00;
+                break;
+
+            case SKYSTONE_POSITION_3:
+                distanceToGo = 4.25;
+                break;
+        }
+
+        robot.driveBackwardTillRotation(distanceToGo, 0.7, 90, false, false);
+        robot.driveBackwardTillRange(30, 0.35, 90, false);
+        robot.driveForwardTillRotation(0.20, 0.50, 90, false, false);
+        robot.turnRightTillDegrees(180, true, true);
+
+        double motorPos =  robot.motorFR.getCurrentPosition();
+        robot.driveBackwardTillTime(750,0.25,true);
         robot.lowerFoundationServos();
+        sleep(500);
+        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
     }
 
     void dropSkystone(){
-        robot.dropStone();
+        if (robot.stoneDetected())
+            robot.dropStone();
     }
 
     void turnFoundation(){
-        robot.driveForwardTillRotation(1.75,0.6,180,true,true);
-        robot.turnLeftTillDegrees(90,true,true);
+        robot.turnLeftTillDegrees(85, 0.90,true,true);
+        robot.driveBackwardTillTime(1000,0.35, true);
         robot.raiseFoundationServos();
+        robot.driveLeftTillRotation(0.10,0.5,90,false,true);
     }
 
     void moveUnderAllianceBridge() {
-        robot.driveForwardTillRotation(2,0.4,90,true,true);
+        robot.driveForwardTillRotation(3.0,0.60,90,false,true);
     }
 
 }

@@ -43,12 +43,12 @@ public class SkystoneRobot {
     final double RAMP_UP_RATE_STRAFE    = 0.05;
 
     final double RAMP_DOWN_DRIVE_TICKS  = 150;
-    final double RAMP_DOWN_DRIVE_RANGE  = 20;
+    final double RAMP_DOWN_DRIVE_RANGE  = 30;
     final double RAMP_DOWN_TURN_DEGREES = 30;
     final double RAMP_DOWN_STRAFE_TICKS = 150;
 
     final double MIN_DRIVE_POWER        = 0.10;
-    final double MIN_TURN_POWER         = 0.15;
+    final double MIN_TURN_POWER         = 0.35;
     final double MIN_STRAFE_POWER       = 0.20;
     final double TURN_POWER             = 0.70;
     final double TURN_TOLERANCE         = 5.0;
@@ -56,10 +56,10 @@ public class SkystoneRobot {
 
     enum V4BLState {
         V4BL_STATE_UNKNOWN      (0.00),
-        V4BL_STATE_STONE        (0.05),
-        V4BL_STATE_INTAKE       (0.23),
-        V4BL_STATE_TOP          (0.55),
-        V4BL_STATE_FOUNDATION   (0.90);
+        V4BL_STATE_STONE        (0.00),
+        V4BL_STATE_INTAKE       (0.15),
+        V4BL_STATE_TOP          (0.50),
+        V4BL_STATE_FOUNDATION   (0.85);
 
         public final double servoPos;
 
@@ -95,8 +95,7 @@ public class SkystoneRobot {
 
     enum LatchPosition {
         LATCH_POSITION_INITIAL,
-        LATCH_POSITION_1,
-        LATCH_POSITION_2
+        LATCH_POSITION_1
     }
 
     enum AllianceMode {
@@ -164,7 +163,6 @@ public class SkystoneRobot {
 
     ColorSensor                     colorSensor     = null;
     DistanceSensor                  colorDistance   = null;
-
 
     ElapsedTime autonomusTimer                      = new ElapsedTime();
 
@@ -259,10 +257,10 @@ public class SkystoneRobot {
 
     public void initColorSensors() {
         // get a reference to the color sensor.
-        colorSensor = opMode.hardwareMap.get(ColorSensor.class, "color_sensor");
+        colorSensor = opMode.hardwareMap.get(ColorSensor.class, "colorSensor");
 
         // get a reference to the distance sensor that shares the same name.
-        colorDistance = opMode.hardwareMap.get(DistanceSensor.class, "color_sensor");
+        colorDistance = opMode.hardwareMap.get(DistanceSensor.class, "colorSensor");
     }
 
     public void initIntakeServos() {
@@ -823,8 +821,8 @@ public class SkystoneRobot {
                 if (headingChange > 180 && targetHeading == 0) {
                     headingChange -= 360;
                 }
-                powerRight +=  2 * (headingChange / 100);
-                powerLeft  -=  2 * (headingChange / 100);
+                powerRight -=  2 * (headingChange / 100);
+                powerLeft  +=  2 * (headingChange / 100);
             }
 
             motorFR.setPower( -1 * powerRight );
@@ -936,9 +934,12 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // turnRightTillDegrees
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void turnRightTillDegrees( int targetDegrees, boolean rampDown, boolean stopMotors )
+    public void turnRightTillDegrees( int targetDegrees, boolean rampDown, boolean stopMotors ) {
+        turnLeftTillDegrees(targetDegrees, TURN_POWER, rampDown,stopMotors);
+    }
+
+    public void turnRightTillDegrees( int targetDegrees, double targetPower, boolean rampDown, boolean stopMotors )
     {
-        double targetPower = TURN_POWER;
         double power = 0.30;
         double currentHeading = 0;
         double degressToGo = 0;
@@ -969,10 +970,13 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // turnLeftTillDegrees
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void turnLeftTillDegrees( int targetDegrees, boolean rampDown, boolean stopMotors )
+    public void turnLeftTillDegrees( int targetDegrees, boolean rampDown, boolean stopMotors ) {
+        turnLeftTillDegrees(targetDegrees, TURN_POWER, rampDown,stopMotors);
+    }
+
+    public void turnLeftTillDegrees( int targetDegrees, double targetPower, boolean rampDown, boolean stopMotors )
     {
-        double targetPower = TURN_POWER;
-        double power = 0.10;
+        double power = 0.30;
         double currentHeading = 0;
         double degressToGo = 0;
 
@@ -994,7 +998,6 @@ public class SkystoneRobot {
             motorFL.setPower( -1 * power );
             motorBR.setPower(      power );
             motorBL.setPower( -1 * power );
-
         }
 
         if (stopMotors) {
@@ -1109,7 +1112,7 @@ public class SkystoneRobot {
 
 
     public boolean isColorBlue() {
-        if (this.colorDistance.getDistance(DistanceUnit.CM) < 3.0) {
+        if (this.colorDistance.getDistance(DistanceUnit.CM) < 6.0) {
             if (colorSensor.blue() > colorSensor.green() &&
                     colorSensor.blue() > colorSensor.red())
                 return true;
@@ -1119,7 +1122,7 @@ public class SkystoneRobot {
 
 
     public boolean isColorRed() {
-        if (this.colorDistance.getDistance(DistanceUnit.CM) < 1.0) {
+        if (this.colorDistance.getDistance(DistanceUnit.CM) < 6.0) {
             if (colorSensor.red() > colorSensor.green() &&
                     colorSensor.red() > colorSensor.blue())
                 return true;
@@ -1177,12 +1180,12 @@ public class SkystoneRobot {
     }
 
     public SkystonePosition scanSkystone( SkystonePosition previousPosition ) {
-        double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.38;
-        double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.32;
+        double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.46;
+        double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.40;
 
         setServoPosition(this.servoCamera, servoPos1, 0);
 
-        opMode.sleep(750);
+        opMode.sleep(1000);
 
         List<Recognition> updatedRecognitions = getTensorFlowRecognitions();
 
@@ -1196,7 +1199,7 @@ public class SkystoneRobot {
         if (!opMode.opModeIsActive() && !opMode.isStopRequested()) {
             setServoPosition(servoCamera, servoPos2, 0);
 
-            opMode.sleep(750);
+            opMode.sleep(1000);
             updatedRecognitions = getTensorFlowRecognitions();
 
             if (updatedRecognitions != null) {
@@ -1221,8 +1224,8 @@ public class SkystoneRobot {
                 servoIntakeLeft.setPosition(1.0);
                 break;
             case LATCH_POSITION_1:
-                servoIntakeRight.setPosition(1.0);
-                servoIntakeLeft.setPosition(0.0);
+                servoIntakeRight.setPosition(0.05);
+                servoIntakeLeft.setPosition(0.1);
                 break;
         }
     }
@@ -1333,15 +1336,15 @@ public class SkystoneRobot {
 
     public void dropStone() {
         setV4BLState(V4BLState.V4BL_STATE_TOP, 15);
-        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION, 30);
+        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION, 25);
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(250);
             raiseGrabber();
             Thread.sleep(100);
 
             setV4BLState(V4BLState.V4BL_STATE_TOP, 15);
-            setV4BLState(V4BLState.V4BL_STATE_INTAKE, 30);
+            setV4BLState(V4BLState.V4BL_STATE_INTAKE, 25);
         }
         catch (Exception e) {
 
