@@ -81,7 +81,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.initCameraServo();
         robot.raiseFoundationServos();
 
-        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
         robot.raiseGrabber();
 
 
@@ -118,8 +118,19 @@ public class AutonomousRedFoundation extends LinearOpMode {
         ////////////////
         grabFoundation();
 
+        ////////////////
+        // STEP 3
+        ////////////////
         turnFoundation();
+
+        ////////////////
+        // STEP 4
+        ////////////////
         dropSkystone();
+
+        ////////////////
+        // STEP 5
+        ////////////////
         moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
@@ -203,6 +214,8 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.driveBackwardTillTime(750,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
+
+        /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
         robot.driveForwardTillRotation(1.1,0.6,180,true,true);
     }
 
@@ -225,6 +238,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
     }
 
     void moveUnderAllianceBridge() {
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
         robot.driveForwardTillRotation(3.0,0.60,270,false,true);
     }
 

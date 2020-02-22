@@ -81,7 +81,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.initCameraServo();
         robot.raiseFoundationServos();
 
-        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
         robot.raiseGrabber();
 
 
@@ -96,6 +96,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData("range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
             telemetry.addData("range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
+
 
 
 
@@ -136,6 +137,8 @@ public class AutonomousBlueFoundation extends LinearOpMode {
     }
 
     void grabSkystone() {
+        if (!opModeIsActive())
+            return;
 
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
@@ -148,20 +151,20 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 break;
 
             case SKYSTONE_POSITION_2:
-                robot.turnRightTillDegrees(90, true, false);
+                robot.turnRightTillDegrees(80, false, false);
                 robot.driveBackwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
+                robot.driveLeftTillRotation(1.25, 0.50, 90, false, false);
                 robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
-                sleep(250);
+                sleep(500);
                 robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
                 break;
 
             case SKYSTONE_POSITION_3:
-                robot.turnRightTillDegrees(90, true, false);
+                robot.turnRightTillDegrees(80, false, false);
                 robot.driveForwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
+                robot.driveLeftTillRotation(1.25, 0.50, 90, false, false);
                 robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
-                sleep(250);
+                sleep(500);
                 robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
                 break;
         }
@@ -173,23 +176,25 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         }
 
         robot.turnRightTillDegrees(80, false, true);
-
     }
 
     void grabFoundation() {
+        if (!opModeIsActive())
+            return;
 
         double distanceToGo = 3.75;
+
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
-                distanceToGo = 3.75;
+                distanceToGo += 0;
                 break;
 
             case SKYSTONE_POSITION_2:
-                distanceToGo = 4.00;
+                distanceToGo += 0.35;
                 break;
 
             case SKYSTONE_POSITION_3:
-                distanceToGo = 4.25;
+                distanceToGo += 0.70;
                 break;
         }
 
@@ -202,15 +207,23 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.driveBackwardTillTime(750,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
+
+   /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
         robot.driveForwardTillRotation(0.75,0.6,180,true,true);
     }
 
     void dropSkystone(){
+        if (!opModeIsActive())
+            return;
+
         if (robot.stoneDetected())
             robot.dropStone();
     }
 
     void turnFoundation(){
+        if (!opModeIsActive())
+            return;
+
         robot.turnLeftTillDegrees(85, 0.90,true,true);
         robot.driveBackwardTillTime(1000,0.35, true);
         robot.raiseFoundationServos();
@@ -218,6 +231,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
     }
 
     void moveUnderAllianceBridge() {
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
         robot.driveForwardTillRotation(3.0,0.60,90,false,true);
     }
 

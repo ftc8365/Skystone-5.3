@@ -50,7 +50,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Autonomous Test", group="Autonomous")
-//@Disabled
+@Disabled
 public class AutonomousTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
@@ -100,12 +100,16 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
+
 //        robot.turnRightTillDegrees(80, false, false);
 //        robot.driveBackwardTillRange(40, 0.35, 90, true);
 //        robot.turnRightTillDegrees(180, true, true);
 
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
 
+        robot.driveForwardTillRotation(1.5,0.4,0,true,true);
+        robot.turnRightTillDegrees(90, true, true);
+        robot.driveLeftTillRotation(1.2, 0.50, 90, false, true);
 
         while (opModeIsActive() ) {
 

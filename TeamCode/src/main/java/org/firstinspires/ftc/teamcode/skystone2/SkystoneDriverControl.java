@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.skystone2;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -76,6 +77,8 @@ public class SkystoneDriverControl extends LinearOpMode {
     LiftState liftState = LiftState.LIFT_DOWN;
     StoneState stoneState = StoneState.OUT_OFF_HOPPER;
 
+    ElapsedTime v4blTime = new ElapsedTime();
+
     @Override
     public void runOpMode()
     {
@@ -89,13 +92,16 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("MotorBL Pos", robot.motorBL.getCurrentPosition());
             telemetry.addData("",  "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
+
         }
 
-        robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE,0);
+        robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE,10);
         robot.raiseGrabber();
+        v4blTime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() ) {
@@ -140,7 +146,7 @@ public class SkystoneDriverControl extends LinearOpMode {
 
             // Going Down
             if (y > 0.01) {
-                power = 0.05;
+                power = 0.10;
             }
             else {
                 power = y;
@@ -180,11 +186,11 @@ public class SkystoneDriverControl extends LinearOpMode {
             lockLiftMotor();
 
             if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 30);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE,30);
             }
             else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP, 15);
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 30);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP, 20);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE,30);
             }
 
             stoneState = StoneState.OUT_OFF_HOPPER;
@@ -194,14 +200,15 @@ public class SkystoneDriverControl extends LinearOpMode {
             robot.stopDriveMotors();
             lockLiftMotor();
 
-            if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION, 30);
-            }
-            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP, 15);
-            }
-            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP, 15);
+            if (v4blTime.milliseconds() > 250) {
+                if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP)) {
+                    robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION, 30);
+                } else if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE)) {
+                    robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP, 20);
+                } else if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE)) {
+                    robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP, 20);
+                }
+                v4blTime.reset();
             }
 
             stoneState = StoneState.OUT_OFF_HOPPER;
@@ -213,12 +220,12 @@ public class SkystoneDriverControl extends LinearOpMode {
 
             if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE ) )
             {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE, 20);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE,20);
                 robot.lowerGrabber();
             }
             else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE ) && robot.getV4BLServoPosition() > SkystoneRobot.V4BLState.V4BL_STATE_STONE.servoPos )
             {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE, 20);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE, 0);
                 robot.lowerGrabber();
             }
 //            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION ))
@@ -232,13 +239,28 @@ public class SkystoneDriverControl extends LinearOpMode {
 
             if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE ) && stoneState == StoneState.IN_HOPPER) {
                 robot.raiseGrabber();
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
+                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 15);
 
 //                robot.offsetV4BLPosition(0.10 , 0);
             }
 //            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION )) {
 //                robot.offsetV4BLPosition(-0.05 , 10);
 //            }
+        }
+        else if (Math.abs(gamepad2.left_stick_y) > 0.01) {
+
+            if (v4blTime.milliseconds() > 250) {
+
+                double position = robot.getV4BLServoPosition();
+
+                if (gamepad2.left_stick_y < 0) {
+                    position += 0.02;
+                } else {
+                    position -= 0.02;
+                }
+                robot.setV4BLPosition(position,0);
+                v4blTime.reset();
+            }
         }
 
         telemetry.addData("StoneState", stoneState);
@@ -253,7 +275,8 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         if (stoneState == StoneState.OUT_OFF_HOPPER && robot.stoneDetected()) {
             robot.grabStone();
-            stoneState  = StoneState.IN_HOPPER;
+            stoneState = StoneState.IN_HOPPER;
+            v4blTime.reset();
         }
 
         //////////////////////////////////////////////////////
@@ -267,7 +290,6 @@ public class SkystoneDriverControl extends LinearOpMode {
         } else {
             robot.turnIntakeoff();
         }
-
 
         //////////////////////////////////////////////////////
         // temporary
