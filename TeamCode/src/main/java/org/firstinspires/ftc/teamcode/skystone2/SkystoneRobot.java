@@ -53,7 +53,10 @@ public class SkystoneRobot {
     final double TURN_POWER             = 0.70;
     final double TURN_TOLERANCE         = 5.0;
 
-
+    double rangeSensorBRAverage         = 0;
+    double rangeSensorBLAverage         = 0;
+    double rangeSensorBRLast            = 0;
+    double rangeSensorBLLast            = 0;
 
 
     ///////////////////MAKE CHANGE HERE IF NEEDED//////MAKE CHANGE TO ALL 4 VALUES//////////
@@ -200,6 +203,7 @@ public class SkystoneRobot {
     Servo servoV4BLLower        = null;
     Servo servoPoker            = null;
     Servo servoCapstone         = null;
+    Servo servoShuttle          = null;
 
 
     LinearOpMode opMode         = null;
@@ -305,6 +309,10 @@ public class SkystoneRobot {
     public void initFoundationServos() {
         this.servoFoundationRight = opMode.hardwareMap.get(Servo.class, "servoFoundationRight");
         this.servoFoundationLeft = opMode.hardwareMap.get(Servo.class, "servoFoundationLeft");
+    }
+
+    public void initShuttleServos(){
+        this.servoShuttle = opMode.hardwareMap.get(Servo.class, "servoShuttle");
     }
 
 
@@ -562,11 +570,14 @@ public class SkystoneRobot {
 
         while (continueAutonomus()) {
 
+            //find out how far to go
+
             ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (motorFL.getCurrentPosition() - initPosition);
 
             if (ticksToGo <= 0)
                 break;
 
+            //get power based on distance
             power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
@@ -819,6 +830,31 @@ public class SkystoneRobot {
         }
     }
 
+    double getMinRange() {
+        double rangeBR = this.rangeSensorBR.rawUltrasonic();
+        double rangeBL = this.rangeSensorBL.rawUltrasonic();
+
+        if (rangeBR == 0)
+            rangeBR = 255;
+        if (rangeBL == 0)
+            rangeBL = 255;
+
+        // Expected to increase
+        if (this.rangeSensorBLLast > 0) {
+            if (rangeBL < this.rangeSensorBLLast )
+                this.rangeSensorBLLast = rangeBL;
+        } else {
+            this.rangeSensorBLLast = rangeBL;
+        }
+
+        if (this.rangeSensorBLLast > 0) {
+            if (rangeBL < this.rangeSensorBLLast )
+                this.rangeSensorBLLast = rangeBL;
+        }
+
+        return Math.min(rangeBR, rangeBL);
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveBackwardTillRange
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -829,11 +865,7 @@ public class SkystoneRobot {
 
         while (continueAutonomus()) {
 
-            double rangeBR = this.rangeSensorBR.rawUltrasonic();
-            double rangeBL = this.rangeSensorBL.rawUltrasonic();
-
-            double minRange = Math.min(rangeBR, rangeBL);
-
+            double minRange = getMinRange();
             if (minRange <= range )
                 break;
 
@@ -1389,6 +1421,24 @@ public class SkystoneRobot {
     public boolean isV4BLState( V4BLState state ) {
         return ((Math.abs(this.currentV4BLPos - state.servoPos)) <= 0.05);
     }
+
+    public void raiseServoShuttle() {
+       servoShuttle.setPosition(0.2);
+    }
+
+    public void lowerServoShuttle(){
+        servoShuttle.setPosition(0);
+    }
+
+/*    public void driveToCoordinate(double x, double y) {
+        int initialX = 0
+        if (x == initialX) {
+            this.driveForwardTillRotation(y/this.TICK_PER_WHEEL_ROTATION);
+        }
+
+
+    }
+*/
 
 
 }

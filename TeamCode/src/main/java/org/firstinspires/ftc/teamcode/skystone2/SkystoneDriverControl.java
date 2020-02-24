@@ -55,14 +55,15 @@ public class SkystoneDriverControl extends LinearOpMode {
 
     SkystoneRobot robot = new SkystoneRobot();
 
-    double DRIVE_NORMAL_POWER_RATIO = 0.80;
+    double DRIVE_NORMAL_POWER_RATIO = 1.00;
     double DRIVE_LOW_POWER_RATIO    = 0.30;
-    double TURN_NORMAL_POWER_RATIO  = 0.50;
+    double TURN_NORMAL_POWER_RATIO  = 0.75;
     double TURN_LOW_POWER_RATIO     = 0.25;
 
     double liftGrabberPos = 0.0;
     double liftRotatorPos = 0.0;
     boolean useDirectionAware = false;
+    boolean driveNormalMode = true;
 
     enum LiftState {
         LIFT_UP,
@@ -89,6 +90,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.initLiftMotors();
         robot.initLiftServos();
         robot.initFoundationServos();
+        robot.initShuttleServos();
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
@@ -294,7 +296,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         //////////////////////////////////////////////////////
         // temporary
         //////////////////////////////////////////////////////
-
+/*
         if (gamepad1.dpad_up) {
             robot.servoPoker.setPosition(0);
             sleep(1000);
@@ -310,7 +312,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         else if (gamepad1.dpad_right || gamepad1.dpad_left) {
             robot.servoPoker.setPosition(0.5);
         }
-
+*/
     }
 
     void operateDriveTrain() {
@@ -318,20 +320,33 @@ public class SkystoneDriverControl extends LinearOpMode {
         double drivePowerRatio = this.DRIVE_NORMAL_POWER_RATIO;
         double turnPowerRatio  = this.TURN_NORMAL_POWER_RATIO;
 
+        if(gamepad1.dpad_down){
+            robot.lowerServoShuttle();
+
+        }
+
+        else if (gamepad1.dpad_up){
+            robot.raiseServoShuttle();
+        }
+
+        if (gamepad1.x){
+            driveNormalMode = false;
+        }
+
+        else if (gamepad1.y){
+            driveNormalMode = true;
+        }
+
+        if(driveNormalMode == false){
+            drivePowerRatio = this.DRIVE_LOW_POWER_RATIO;
+        }
+
         if (gamepad1.left_stick_button) {
             drivePowerRatio = this.DRIVE_LOW_POWER_RATIO;
         }
 
         if (gamepad1.right_stick_button){
             turnPowerRatio  = this.TURN_LOW_POWER_RATIO;
-        }
-
-        ///////////////////////////////////////////////////////////
-        // Gamepad1 Button X - turns on/off Direction Aware Drive
-        ///////////////////////////////////////////////////////////
-
-        if (gamepad1.x) {
-            this.useDirectionAware = true;
         }
 
         double driveStickXValue = gamepad1.left_stick_x;
@@ -342,10 +357,7 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         int joystickPosition = 0;
 
-        if (this.useDirectionAware)
-            joystickPosition = getDirectionAwareJoystickPosition( driveStickXValue, driveStickYValue);
-        else
-            joystickPosition = getJoystickPosition(driveStickXValue, driveStickYValue);
+        joystickPosition = getJoystickPosition(driveStickXValue, driveStickYValue);
 
         double value = Math.max( Math.abs(driveStickYValue), Math.abs(driveStickXValue));
 

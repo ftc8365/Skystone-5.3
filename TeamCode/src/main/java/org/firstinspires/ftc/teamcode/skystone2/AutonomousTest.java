@@ -50,7 +50,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Autonomous Test", group="Autonomous")
-@Disabled
+//@Disabled
 public class AutonomousTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
@@ -90,8 +90,13 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData( "range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData( "range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
+            telemetry.addData( "range_sensorBR ultrasonic", robot.rangeSensorBR.rawUltrasonic());
+            telemetry.addData( "range_sensorBL ultrasonic", robot.rangeSensorBL.rawUltrasonic());
+
+            telemetry.addData( "range_sensorBR Optical", robot.rangeSensorBR.getDistance(DistanceUnit.INCH));
+            telemetry.addData( "range_sensorBL Optical", robot.rangeSensorBL.getDistance(DistanceUnit.INCH));
+
+
             telemetry.addData("V4BLState", robot.getV4BLState());
             telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
 
@@ -105,11 +110,7 @@ public class AutonomousTest extends LinearOpMode {
 //        robot.driveBackwardTillRange(40, 0.35, 90, true);
 //        robot.turnRightTillDegrees(180, true, true);
 
-        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-
-        robot.driveForwardTillRotation(1.5,0.4,0,true,true);
-        robot.turnRightTillDegrees(90, true, true);
-        robot.driveLeftTillRotation(1.2, 0.50, 90, false, true);
+        robot.driveBackwardTillRange(30, 0.35, 0, true);
 
         while (opModeIsActive() ) {
 

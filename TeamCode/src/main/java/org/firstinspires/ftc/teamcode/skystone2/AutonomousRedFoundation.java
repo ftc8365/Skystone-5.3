@@ -211,10 +211,9 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.driveForwardTillRotation(0.20, 0.50, 270, false, false);
         robot.turnLeftTillDegrees(180, true, true);
 
-        robot.driveBackwardTillTime(750,0.25,true);
+        robot.driveBackwardTillTime(1000,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
-
         /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
         robot.driveForwardTillRotation(1.1,0.6,180,true,true);
     }

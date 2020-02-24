@@ -136,6 +136,21 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.servoCamera.setPosition(0);
     }
 
+    /*
+    void grabSkystoneMotion() {
+        if (!opModeIsActive())
+            return;
+
+        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+        robot.setCoordiantes(0,0);
+        robot.driveToCoordinate(0,1120);
+        robot.driveToCoordinate(560,940);
+
+    }
+    */
+
+
     void grabSkystone() {
         if (!opModeIsActive())
             return;
