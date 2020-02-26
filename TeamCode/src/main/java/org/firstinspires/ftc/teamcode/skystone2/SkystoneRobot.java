@@ -137,6 +137,7 @@ public class SkystoneRobot {
     public DcMotor motorIntakeRight = null;
     public DcMotor motorIntakeLeft  = null;
     public DcMotor motorLiftRight  = null;
+    public DcMotor motorTape = null;
 //    public DcMotor motorLiftLeft   = null;
 
     /////////////////////
@@ -269,9 +270,15 @@ public class SkystoneRobot {
         motorLiftRight.setDirection(DcMotor.Direction.FORWARD);
         motorLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
 //        motorLiftLeft  = opMode.hardwareMap.get(DcMotor.class, "motorLiftLeft");
 //        motorLiftLeft.setDirection(DcMotor.Direction.REVERSE);
 //        motorLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        motorTape  = opMode.hardwareMap.get(DcMotor.class, "motorTape");
+        motorTape.setDirection(DcMotor.Direction.FORWARD);
+        motorTape.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     public void initRangeSensors() {
@@ -493,29 +500,40 @@ public class SkystoneRobot {
     }
 */
 
-    void setV4BLPosition(double targetPosition, int delay) {
+    void setV4BLPosition(double targetPosition, int maxDelay) {
         if (targetPosition > 1.0 || targetPosition < 0.0)
             return;
 
         double currentPos = servoV4BLUpper.getPosition();
 
         if (currentPos > targetPosition) {
-            while (servoV4BLUpper.getPosition() > targetPosition) {
+            while (currentPos > targetPosition) {
                 double targetPosUpper = servoV4BLUpper.getPosition() - 0.02;
                 double targetPosLower = 1- targetPosUpper;
 
                 servoV4BLUpper.setPosition(targetPosUpper);
                 servoV4BLLower.setPosition(targetPosLower);
-                opMode.sleep(delay);
+
+                double error = currentPos - targetPosition;
+                if (error < 0.40)
+                    opMode.sleep((40 - (int)(100*error)));
+
+                currentPos = targetPosUpper;
             }
         } else if (currentPos < targetPosition) {
-            while (servoV4BLUpper.getPosition() < targetPosition) {
+
+            while (currentPos < targetPosition) {
                 double targetPosUpper = servoV4BLUpper.getPosition() + 0.02;
                 double targetPosLower = 1- targetPosUpper;
 
                 servoV4BLUpper.setPosition(targetPosUpper);
                 servoV4BLLower.setPosition(targetPosLower);
-                opMode.sleep(delay);
+
+                double error = targetPosition - currentPos;
+                if (error < 0.40)
+                    opMode.sleep((40 - (int)(100*error)));
+
+                currentPos = targetPosUpper;
             }
         }
 
@@ -822,7 +840,7 @@ public class SkystoneRobot {
             motorFR.setPower( power * -1);
             motorFL.setPower( power * -1);
             motorBR.setPower( power * -1);
-            motorBL.setPower( power * -1);
+            motorBL.setPower( power * -1);f
         }
 
         if (stopMotors) {
