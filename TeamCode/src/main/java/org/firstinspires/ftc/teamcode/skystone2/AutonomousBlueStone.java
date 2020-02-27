@@ -94,8 +94,7 @@ public class AutonomousBlueStone extends LinearOpMode {
             telemetry.addData("Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData("range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
+            telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
 
 
 

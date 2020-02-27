@@ -94,8 +94,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
             telemetry.addData("Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("range_sensorFR", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData("range_sensorFL", robot.rangeSensorBL.rawUltrasonic());
+            telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
 
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
@@ -207,7 +206,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
         }
 
         robot.driveBackwardTillRotation(distanceToGo, 0.7, 270, false, false);
-        robot.driveBackwardTillRange(30, 0.35, 270, false);
+        robot.driveBackwardTillRange(11.5, 0.35, 270, false);
         robot.driveForwardTillRotation(0.20, 0.50, 270, false, false);
         robot.turnLeftTillDegrees(180, true, true);
 

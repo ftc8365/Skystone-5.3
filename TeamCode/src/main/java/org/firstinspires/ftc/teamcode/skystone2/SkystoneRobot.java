@@ -61,26 +61,12 @@ public class SkystoneRobot {
 
     ///////////////////MAKE CHANGE HERE IF NEEDED//////MAKE CHANGE TO ALL 4 VALUES//////////
 
-/*    enum V4BLState {
-        V4BL_STATE_UNKNOWN      (0.00),
-        V4BL_STATE_STONE        (0.10),
-        V4BL_STATE_INTAKE       (0.25),
-        V4BL_STATE_TOP          (0.60),
-        V4BL_STATE_FOUNDATION   (0.95);
-
-        public final double servoPos;
-
-        V4BLState(double pos) {
-            this.servoPos = pos;
-        }
-    }
-*/
     enum V4BLState {
         V4BL_STATE_UNKNOWN      (0.00),
         V4BL_STATE_STONE        (0.15),
         V4BL_STATE_INTAKE       (0.25),
         V4BL_STATE_TOP          (0.75),
-        V4BL_STATE_FOUNDATION   (0.97);
+        V4BL_STATE_FOUNDATION   (0.96);
 
         public final double servoPos;
 
@@ -88,7 +74,6 @@ public class SkystoneRobot {
             this.servoPos = pos;
         }
     }
-
 
 
     double currentV4BLPos               = 0;
@@ -178,8 +163,9 @@ public class SkystoneRobot {
     // Declare sensors
     /////////////////////
     /////////////////////
-    ModernRoboticsI2cRangeSensor    rangeSensorBR   = null;
-    ModernRoboticsI2cRangeSensor    rangeSensorBL   = null;
+//    ModernRoboticsI2cRangeSensor    rangeSensorBR   = null;
+//    ModernRoboticsI2cRangeSensor    rangeSensorBL   = null;
+    DistanceSensor                  rangeSensor   = null;
 
     DistanceSensor                  distanceSensor  = null;
     IntegratingGyroscope            gyro            = null;
@@ -282,8 +268,9 @@ public class SkystoneRobot {
     }
 
     public void initRangeSensors() {
-        rangeSensorBR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
-        rangeSensorBL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
+//        rangeSensorBR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
+//        rangeSensorBL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
+        rangeSensor = opMode.hardwareMap.get(DistanceSensor.class, "range_sensor");
     }
 
     public void initColorSensors() {
@@ -501,6 +488,7 @@ public class SkystoneRobot {
 */
 
     void setV4BLPosition(double targetPosition, int maxDelay) {
+
         if (targetPosition > 1.0 || targetPosition < 0.0)
             return;
 
@@ -840,7 +828,7 @@ public class SkystoneRobot {
             motorFR.setPower( power * -1);
             motorFL.setPower( power * -1);
             motorBR.setPower( power * -1);
-            motorBL.setPower( power * -1);f
+            motorBL.setPower( power * -1);
         }
 
         if (stopMotors) {
@@ -848,46 +836,30 @@ public class SkystoneRobot {
         }
     }
 
-    double getMinRange() {
-        double rangeBR = this.rangeSensorBR.rawUltrasonic();
-        double rangeBL = this.rangeSensorBL.rawUltrasonic();
+    double getMinRangeInInches() {
+        double range = this.rangeSensor.getDistance(DistanceUnit.INCH);
 
-        if (rangeBR == 0)
-            rangeBR = 255;
-        if (rangeBL == 0)
-            rangeBL = 255;
+        if (range == 0)
+            range = 255;
 
-        // Expected to increase
-        if (this.rangeSensorBLLast > 0) {
-            if (rangeBL < this.rangeSensorBLLast )
-                this.rangeSensorBLLast = rangeBL;
-        } else {
-            this.rangeSensorBLLast = rangeBL;
-        }
-
-        if (this.rangeSensorBLLast > 0) {
-            if (rangeBL < this.rangeSensorBLLast )
-                this.rangeSensorBLLast = rangeBL;
-        }
-
-        return Math.min(rangeBR, rangeBL);
+        return range;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveBackwardTillRange
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveBackwardTillRange( double range, double targetPower, int targetHeading, boolean stopMotors )
+    public void driveBackwardTillRange( double rangeInInches, double targetPower, int targetHeading, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         double power            = 0.10;
 
         while (continueAutonomus()) {
 
-            double minRange = getMinRange();
-            if (minRange <= range )
+            double curRange = getMinRangeInInches();
+            if (curRange <= rangeInInches )
                 break;
 
-            power = getDriveRangePower(power, minRange, targetPower);
+            power = getDriveRangePower(power, curRange, targetPower);
 
             double powerRight = power;
             double powerLeft  = power;

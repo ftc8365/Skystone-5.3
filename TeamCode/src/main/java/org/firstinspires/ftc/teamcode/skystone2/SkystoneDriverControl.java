@@ -347,12 +347,12 @@ public class SkystoneDriverControl extends LinearOpMode {
         if (gamepad1.x){
             driveNormalMode = false;
         }
-
         else if (gamepad1.y){
             driveNormalMode = true;
         }
 
-        if(driveNormalMode == false){
+
+        if (driveNormalMode == false){
             drivePowerRatio = this.DRIVE_LOW_POWER_RATIO;
         }
 

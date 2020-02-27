@@ -90,12 +90,8 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData( "range_sensorBR ultrasonic", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData( "range_sensorBL ultrasonic", robot.rangeSensorBL.rawUltrasonic());
-
-            telemetry.addData( "range_sensorBR Optical", robot.rangeSensorBR.getDistance(DistanceUnit.INCH));
-            telemetry.addData( "range_sensorBL Optical", robot.rangeSensorBL.getDistance(DistanceUnit.INCH));
-
+            telemetry.addData( "range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
+            telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.CM));
 
             telemetry.addData("V4BLState", robot.getV4BLState());
             telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
@@ -117,8 +113,7 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
-            telemetry.addData( "range_sensorBR", robot.rangeSensorBR.rawUltrasonic());
-            telemetry.addData( "range_sensorBL", robot.rangeSensorBL.rawUltrasonic());
+            telemetry.addData( "range_sensorBR ultrasonic", robot.rangeSensor.getDistance(DistanceUnit.INCH));
             telemetry.update();
         }
 
