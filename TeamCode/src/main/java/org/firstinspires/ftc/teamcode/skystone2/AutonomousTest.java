@@ -79,6 +79,7 @@ public class AutonomousTest extends LinearOpMode {
         robot.initIntakeMotors();
         robot.raiseFoundationServos();
 
+
 //        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
 //        robot.raiseGrabber();
 
@@ -101,12 +102,10 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
+        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+        robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
+        robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
 
-//        robot.turnRightTillDegrees(80, false, false);
-//        robot.driveBackwardTillRange(40, 0.35, 90, true);
-//        robot.turnRightTillDegrees(180, true, true);
-
-        robot.driveBackwardTillRange(30, 0.35, 0, true);
 
         while (opModeIsActive() ) {
 

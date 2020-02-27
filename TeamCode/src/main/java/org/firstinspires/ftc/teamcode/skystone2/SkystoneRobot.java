@@ -43,7 +43,7 @@ public class SkystoneRobot {
     final double RAMP_UP_RATE_STRAFE    = 0.05;
 
     final double RAMP_DOWN_DRIVE_TICKS  = 150;
-    final double RAMP_DOWN_DRIVE_RANGE  = 30;
+    final double RAMP_DOWN_DRIVE_RANGE  = 15;
     final double RAMP_DOWN_TURN_DEGREES = 30;
     final double RAMP_DOWN_STRAFE_TICKS = 150;
 
@@ -1430,5 +1430,67 @@ public class SkystoneRobot {
     }
 */
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // driveBackwardTillRotation
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public void curveBackwardTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    {
+        boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
+        int initPosition        = getCurrentDrivePosition();
+        int ticksToGo           = 0;
+        double power            = 0.0;
+        double currentHeading   = 0;
+        double degreesToGo      = 0;
+
+        while (continueAutonomus()) {
+
+            currentHeading = getCurrentPositionInDegrees();
+            if (currentHeading > 180 && targetHeading < 180)
+                currentHeading -= 360;
+
+            degreesToGo = targetHeading - currentHeading;
+            if (degreesToGo <= TURN_TOLERANCE)
+                break;
+
+            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+
+            double powerRight = power;
+            double powerLeft  = power;
+
+            // Adjusting motor power based on gyro position
+            // to force the robot to move straight
+            if (useGyroToAlign) {
+                double headingChange   = currentHeading - targetHeading;
+
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
+                }
+
+                double change = headingChange / 100;
+
+                if (change < 0) {
+                    if (change < -0.5)
+                        change = -0.5;
+                    else if (change > change -0.25)
+                        change = -0.25;
+                }
+                powerRight -= 0.65 * change;
+                powerLeft  += 0.65 * change;
+
+                //powerRight -=  0.7 * (headingChange / 100);
+                //powerLeft  +=  0.7 * (headingChange / 100);
+
+            }
+
+            motorFR.setPower( powerRight * -1);
+            motorFL.setPower( powerLeft * -1);
+            motorBR.setPower( powerRight * -1);
+            motorBL.setPower( powerLeft * -1);
+        }
+
+        if (stopMotors) {
+            stopDriveMotors();
+        }
+    }
 
 }

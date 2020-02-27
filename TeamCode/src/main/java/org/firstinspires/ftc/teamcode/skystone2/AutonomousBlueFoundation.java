@@ -118,9 +118,9 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         ////////////////
         grabFoundation();
 
-        turnFoundation();
-        dropSkystone();
-        moveUnderAllianceBridge();
+//        turnFoundation();
+//        dropSkystone();
+//        moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
     }
@@ -129,7 +129,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.shutdownTensorFlow();
         robot.resetAutonomousTimer();
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-        robot.servoCamera.setPosition(0);
+        robot.servoCamera.setPosition(0.3);
     }
 
     /*
@@ -157,8 +157,20 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
-                robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
-                robot.driveBackwardTillRotation(1.20, 0.50, 0, true, true);
+                robot.driveForwardTillRotation(1.75, 0.30, 0, false, true);
+
+                runtime.reset();
+
+                while (runtime.seconds() < 3) {
+                    if (robot.stoneDetected())  {
+                        robot.grabStone();
+                        break;
+                    }
+                }
+
+                robot.turnIntakeoff();
+                robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
+
                 break;
 
             case SKYSTONE_POSITION_2:
@@ -168,6 +180,14 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
                 sleep(500);
                 robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
+
+                robot.turnIntakeoff();
+
+                if (robot.stoneDetected()) {
+                    robot.grabStone();
+                }
+
+                robot.turnRightTillDegrees(80, false, true);
                 break;
 
             case SKYSTONE_POSITION_3:
@@ -177,16 +197,18 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
                 sleep(500);
                 robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
+
+                robot.turnIntakeoff();
+
+                if (robot.stoneDetected()) {
+                    robot.grabStone();
+                }
+
+                robot.turnRightTillDegrees(80, false, true);
+
                 break;
         }
 
-        robot.turnIntakeoff();
-
-        if (robot.stoneDetected()) {
-            robot.grabStone();
-        }
-
-        robot.turnRightTillDegrees(80, false, true);
     }
 
     void grabFoundation() {
@@ -197,7 +219,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
-                distanceToGo += 0;
+                distanceToGo = 1.0;
                 break;
 
             case SKYSTONE_POSITION_2:
@@ -210,17 +232,16 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         }
 
         robot.driveBackwardTillRotation(distanceToGo, 0.7, 90, false, false);
-        robot.driveBackwardTillRange(11.5, 0.35, 90, false);
+        robot.driveBackwardTillRange(11.5, 0.35, 90, true);
         robot.driveForwardTillRotation(0.20, 0.50, 90, false, false);
         robot.turnRightTillDegrees(180, true, true);
 
-        double motorPos =  robot.motorFR.getCurrentPosition();
         robot.driveBackwardTillTime(750,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
 
    /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
-        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
+//        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
     }
 
     void dropSkystone(){
