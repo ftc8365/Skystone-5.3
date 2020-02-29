@@ -91,6 +91,7 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
+
             telemetry.addData( "range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
             telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.CM));
 

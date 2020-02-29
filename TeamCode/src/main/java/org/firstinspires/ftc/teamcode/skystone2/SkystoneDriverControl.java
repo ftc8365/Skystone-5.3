@@ -93,7 +93,8 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("distance", robot.distanceSensor.getDistance(DistanceUnit.CM));
-            telemetry.addData("MotorBL Pos", robot.motorBL.getCurrentPosition());
+            telemetry.addData("MotorBL Pos", (double)robot.motorBL.getCurrentPosition());
+            telemetry.addData("MotorTape Pos", (double)robot.motorTape.getCurrentPosition());
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
