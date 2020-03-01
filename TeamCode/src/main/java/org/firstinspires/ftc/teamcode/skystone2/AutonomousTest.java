@@ -103,10 +103,12 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
-        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
-        robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
-        robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
+//        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+//        robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
+//        robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
 
+        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
+        robot.servoCamera.setPosition(0.3);
 
         while (opModeIsActive() ) {
 

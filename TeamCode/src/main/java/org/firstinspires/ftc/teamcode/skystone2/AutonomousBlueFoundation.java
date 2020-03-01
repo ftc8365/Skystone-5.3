@@ -118,9 +118,9 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         ////////////////
         grabFoundation();
 
-//        turnFoundation();
-//        dropSkystone();
-//        moveUnderAllianceBridge();
+        turnFoundation();
+        dropSkystone();
+        moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
     }
@@ -219,7 +219,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_1:
-                distanceToGo = 1.0;
+                distanceToGo = 1.5;
                 break;
 
             case SKYSTONE_POSITION_2:
@@ -240,11 +240,11 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         robot.lowerFoundationServos();
         sleep(500);
 
-   /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
-//        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
+        /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
+        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
     }
 
-    void dropSkystone(){
+    void dropSkystone() {
         if (!opModeIsActive())
             return;
 
@@ -252,17 +252,19 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             robot.dropStone();
     }
 
-    void turnFoundation(){
+    void turnFoundation() {
         if (!opModeIsActive())
             return;
 
         robot.turnLeftTillDegrees(85, 0.90,true,true);
         robot.driveBackwardTillTime(1000,0.35, true);
         robot.raiseFoundationServos();
-        robot.driveLeftTillRotation(0.10,0.5,90,false,true);
+        robot.driveLeftTillRotation(0.20,0.5,90,false,true);
     }
 
     void moveUnderAllianceBridge() {
+        robot.driveRightTillRotation(0.20,0.5,90,false,true);
+
         robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
         robot.driveForwardTillRotation(3.0,0.60,90,false,true);
     }

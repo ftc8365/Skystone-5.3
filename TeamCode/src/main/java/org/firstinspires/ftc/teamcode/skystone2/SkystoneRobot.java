@@ -465,8 +465,8 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // setV4BLServoPosition
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void setV4BLState(V4BLState targetState, int delay) {
-        setV4BLPosition(targetState.servoPos, delay);
+    void setV4BLState(V4BLState targetState) {
+        setV4BLPosition(targetState.servoPos);
         this.currentV4BLState = targetState;
     }
 
@@ -487,7 +487,7 @@ public class SkystoneRobot {
     }
 */
 
-    void setV4BLPosition(double targetPosition, int maxDelay) {
+    void setV4BLPosition(double targetPosition) {
 
         if (targetPosition > 1.0 || targetPosition < 0.0)
             return;
@@ -1277,7 +1277,7 @@ public class SkystoneRobot {
                 break;
             case LATCH_POSITION_1:
                 servoIntakeRight.setPosition(0.05);
-                servoIntakeLeft.setPosition(0.1);
+                servoIntakeLeft.setPosition(0.35);
                 break;
         }
     }
@@ -1378,21 +1378,18 @@ public class SkystoneRobot {
     }
 
     public void grabStone() {
-        setV4BLState(V4BLState.V4BL_STATE_STONE, 20);
+        setV4BLState(V4BLState.V4BL_STATE_STONE);
         lowerGrabber();
     }
 
     public void dropStone() {
-        setV4BLState(V4BLState.V4BL_STATE_TOP, 20);
-        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION,30);
+        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION);
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(200);
             raiseGrabber();
-            Thread.sleep(100);
-
-            setV4BLState(V4BLState.V4BL_STATE_TOP,10);
-            setV4BLState(V4BLState.V4BL_STATE_INTAKE,20);
+            Thread.sleep(500);
+            setV4BLState(V4BLState.V4BL_STATE_STONE);
         }
         catch (Exception e) {
 
@@ -1474,8 +1471,8 @@ public class SkystoneRobot {
                     else if (change > change -0.25)
                         change = -0.25;
                 }
-                powerRight -= 0.65 * change;
-                powerLeft  += 0.65 * change;
+                powerRight -= 0.60 * change;
+                powerLeft  += 0.60 * change;
 
                 //powerRight -=  0.7 * (headingChange / 100);
                 //powerLeft  +=  0.7 * (headingChange / 100);

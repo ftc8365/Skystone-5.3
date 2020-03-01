@@ -232,10 +232,12 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.turnRightTillDegrees(275, 0.90,true,true);
         robot.driveBackwardTillTime(1000,0.35, true);
         robot.raiseFoundationServos();
-        robot.driveRightTillRotation(0.60,0.5,270,false,true);
+        robot.driveRightTillRotation(0.20,0.5,270,false,true);
     }
 
     void moveUnderAllianceBridge() {
+        robot.driveLeftTillRotation(0.20,0.5,270,false,true);
+
         robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
         robot.driveForwardTillRotation(3.0,0.60,270,false,true);
     }
