@@ -46,9 +46,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Auto Navigate Left", group="Autonomous")
+@Autonomous(name="Auto Navigate Forward", group="Autonomous")
 //@Disabled
-public class AutonomousNavigateLeft extends LinearOpMode {
+public class AutonomousNavigateForward extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -59,7 +59,6 @@ public class AutonomousNavigateLeft extends LinearOpMode {
     ElapsedTime autonomusTimer = new ElapsedTime();
 
     SkystoneRobot robot = new SkystoneRobot();
-
 
     @Override
     public void runOpMode() {
@@ -80,10 +79,12 @@ public class AutonomousNavigateLeft extends LinearOpMode {
         ///////////////////////////////////////
         // Start of program
         ///////////////////////////////////////
+        robot.resetAutonomousTimer();
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
+        robot.servoCamera.setPosition(0.3);
 
-        robot.driveForwardTillRotation(0.05, 0.50, 0, false, false);
-        robot.driveLeftTillRotation(0.50, 0.50, 0, false, true);
+        robot.driveForwardTillRotationOrCOlor(1.0, 0.30, false, true);
+
     }
 
 }

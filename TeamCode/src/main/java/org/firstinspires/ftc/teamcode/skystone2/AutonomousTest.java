@@ -79,11 +79,7 @@ public class AutonomousTest extends LinearOpMode {
         robot.initIntakeMotors();
         robot.raiseFoundationServos();
 
-
-//        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE, 0);
-//        robot.raiseGrabber();
-
-//        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_INITIAL);
+        robot.servoCamera.setPosition(0.5);
 
         while (!opModeIsActive() && !isStopRequested()) {
 
@@ -92,8 +88,11 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
 
-            telemetry.addData( "range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
-            telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("MotorBL Pos", (double)robot.motorBL.getCurrentPosition());
+            telemetry.addData("MotorTape Pos", (double)robot.motorTape.getCurrentPosition());
+
+            telemetry.addData("rangeSensorFront", robot.rangeSensorFront.getDistance(DistanceUnit.INCH));
+            telemetry.addData("rangeSensorBack", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
 
             telemetry.addData("V4BLState", robot.getV4BLState());
             telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
@@ -103,19 +102,47 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
-//        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+        //robot.servoCamera.setPosition(1.0);
+
+
+        runtime.reset();
+
+        robot.driveForwardTillRange(26, 0.4,0, true, true);
+        robot.driveLeftTillRotation(0.25, 0.60, 0, false, false);
+        robot.driveForwardTillRotation(0.25, 0.30, 0, false, true);
+        sleep(500);
+        robot.driveRightTillRotation(0.25, 0.60, 0, false, false);
+        robot.driveBackwardTillRotation(2.00,0.80,0, false, true);
+
+
+
+
+        double sec = runtime.seconds();
+//        robot.grabStone();
+//        sleep(1000);
+//        robot.dropStone();
+
+//        robot.driveLeftTillRotation(0.5, 0.50, 0, true, true);
+//        robot.driveRightTillRotation(0.5, 0.50, 0, true, true);
+
 //        robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
 //        robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
 
-        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-        robot.servoCamera.setPosition(0.3);
-
         while (opModeIsActive() ) {
+
+            telemetry.addData( "Seconds", sec);
 
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
-            telemetry.addData( "range_sensorBR ultrasonic", robot.rangeSensor.getDistance(DistanceUnit.INCH));
+
+
+            telemetry.addData("rangeSensorFront", robot.rangeSensorFront.getDistance(DistanceUnit.INCH));
+            telemetry.addData("rangeSensorBack", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
+
+            telemetry.addData("MotorBL Pos", (double)robot.motorBL.getCurrentPosition());
+            telemetry.addData("MotorTape Pos", (double)robot.motorTape.getCurrentPosition());
+
             telemetry.update();
         }
 

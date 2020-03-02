@@ -2,20 +2,48 @@ package org.firstinspires.ftc.teamcode.skystone2;
 
 public class PIDController {
 
+    // Neverest 20 motors = 560 ticks per rotation
+    // Neverest 40 moteos = 1120 tickers per rotation
+    final int TICK_PER_WHEEL_ROTATION   = 560;
+    final int TICK_PER_WHEEL_ODOMETRY_ROTATION = 7500;
+
     final double RAMP_UP_RATE_DRIVE     = 0.01;
     final double RAMP_UP_RATE_TURN      = 0.01;
     final double RAMP_UP_RATE_STRAFE    = 0.05;
 
-    final double RAMP_DOWN_DRIVE_TICKS  = 150;
+    final double RAMP_DOWN_DRIVE_TICKS  = TICK_PER_WHEEL_ROTATION / 3.5;
+    final double RAMP_DOWN_DRIVE_ODOMETRY_TICKS  = TICK_PER_WHEEL_ODOMETRY_ROTATION / 3.0;
+
     final double RAMP_DOWN_DRIVE_RANGE  = 30;
     final double RAMP_DOWN_TURN_DEGREES = 30;
-    final double RAMP_DOWN_STRAFE_TICKS = 150;
 
     final double MIN_DRIVE_POWER        = 0.10;
     final double MIN_TURN_POWER         = 0.35;
-    final double MIN_STRAFE_POWER       = 0.20;
+    final double MIN_STRAFE_POWER       = 0.30;
     final double TURN_POWER             = 0.70;
     final double TURN_TOLERANCE         = 5.0;
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // getDrivePower
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public double getSidewayDrivePower( double curPower, double ticksToGo, double targetPower, boolean rampDown ) {
+        double power = curPower;
+
+        // Ramp down power
+        if ( rampDown && (ticksToGo <= RAMP_DOWN_DRIVE_ODOMETRY_TICKS) ) {
+            power = ( ticksToGo / RAMP_DOWN_DRIVE_ODOMETRY_TICKS )  * curPower;
+
+            if (power < MIN_STRAFE_POWER)
+                power = MIN_STRAFE_POWER;
+        }
+        else if (targetPower - power > 0.001) {
+            power += this.RAMP_UP_RATE_DRIVE;
+        }
+
+        return power;
+    }
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

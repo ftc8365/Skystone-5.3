@@ -91,10 +91,10 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.initFoundationServos();
         robot.initShuttleServos();
 
+        robot.servoCapstone.setPosition(0.50);
+
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("distance", robot.distanceSensor.getDistance(DistanceUnit.CM));
-            telemetry.addData("MotorBL Pos", (double)robot.motorBL.getCurrentPosition());
-            telemetry.addData("MotorTape Pos", (double)robot.motorTape.getCurrentPosition());
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
@@ -103,6 +103,8 @@ public class SkystoneDriverControl extends LinearOpMode {
 
         robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
         robot.raiseGrabber();
+//        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
+//        robot.servoCamera.setPosition(0.3);
         v4blTime.reset();
 
         // run until the end of the match (driver presses STOP)
@@ -191,7 +193,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         // CAPSTONE
         ///////////////////////////
         if (gamepad2.y) {
-            robot.servoCapstone.setPosition(1);
+            robot.servoCapstone.setPosition(0.0);
         }
 
         ///////////////////////////
@@ -201,45 +203,35 @@ public class SkystoneDriverControl extends LinearOpMode {
             robot.stopDriveMotors();
             lockLiftMotor();
 
-            if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_TOP )) {
+            if (robot.isV4BLStateIntake2Foundation())
                 robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
-            }
-            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION )) {
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
-            }
 
             stoneState = StoneState.OUT_OFF_HOPPER;
         }
-        else if (gamepad2.dpad_right)
-        {
+        else if (gamepad2.dpad_right) {
             robot.stopDriveMotors();
             lockLiftMotor();
 
             if (v4blTime.milliseconds() > 250) {
-                if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP)) {
+
+                if (robot.isV4BLStateTop2Foundation())
                     robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION);
-                } else if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE)) {
+                else if (robot.isV4BLStateStone2Top())
                     robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP);
-                } else if (robot.isV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE)) {
-                    robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_TOP);
-                }
+
                 v4blTime.reset();
             }
 
             stoneState = StoneState.OUT_OFF_HOPPER;
         }
-        else if (gamepad2.dpad_down)
-        {
+        else if (gamepad2.dpad_down) {
             robot.stopDriveMotors();
             lockLiftMotor();
 
-            if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE ) )
-            {
+            if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE ) ) {
                 robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE);
                 robot.lowerGrabber();
-            }
-            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE ) && robot.getV4BLServoPosition() > SkystoneRobot.V4BLState.V4BL_STATE_STONE.servoPos )
-            {
+            } else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE ) && robot.getV4BLServoPosition() > SkystoneRobot.V4BLState.V4BL_STATE_STONE.servoPos ) {
                 robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE);
                 robot.lowerGrabber();
             }
@@ -254,33 +246,28 @@ public class SkystoneDriverControl extends LinearOpMode {
 
             if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_STONE ) && stoneState == StoneState.IN_HOPPER) {
                 robot.raiseGrabber();
-                robot.setV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
-
-//                robot.offsetV4BLPosition(0.10 , 0);
+                robot.setV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
             }
-//            else if (robot.isV4BLState( SkystoneRobot.V4BLState.V4BL_STATE_FOUNDATION )) {
-//                robot.offsetV4BLPosition(-0.05 , 10);
-//            }
         }
-/*        else if (Math.abs(gamepad2.left_stick_y) > 0.01) {
+        else if (Math.abs(gamepad2.left_stick_x) > 0.10) {
 
             if (v4blTime.milliseconds() > 25) {
 
                 double position = robot.getV4BLServoPosition();
 
-                if (gamepad2.left_stick_y < 0) {
-                    position += 0.02;
+                if (gamepad2.left_stick_x > 0) {
+                    position += 0.05;
                 } else {
-                    position -= 0.02;
+                    position -= 0.05;
                 }
-                robot.setV4BLPosition(position,0);
+                robot.setV4BLPosition(position);
                 v4blTime.reset();
             }
-        }*/
+        }
 
-        telemetry.addData("StoneState", stoneState);
-        telemetry.addData("V4BLState", robot.getV4BLState());
-        telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
+//        telemetry.addData("StoneState", stoneState);
+//        telemetry.addData("V4BLState", robot.getV4BLState());
+//        telemetry.addData("V4BLPos", robot.getV4BLServoPosition());
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -329,7 +316,6 @@ public class SkystoneDriverControl extends LinearOpMode {
         else if (gamepad1.y){
             driveNormalMode = true;
         }
-
 
         if (driveNormalMode == false){
             drivePowerRatio = this.DRIVE_LOW_POWER_RATIO;

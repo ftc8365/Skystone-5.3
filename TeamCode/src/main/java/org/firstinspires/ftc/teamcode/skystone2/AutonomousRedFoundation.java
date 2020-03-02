@@ -94,7 +94,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
             telemetry.addData("Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("range_sensor", robot.rangeSensor.getDistance(DistanceUnit.INCH));
+            telemetry.addData("range_sensor", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
 
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
@@ -151,12 +151,12 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.driveForwardTillRotation(1.50,0.50,0, true, false);
 
         switch (skystonePosition) {
-            case SKYSTONE_POSITION_1:
+            case SKYSTONE_POSITION_3_6:
                 robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
                 robot.driveBackwardTillRotation(1.20, 0.50, 0, true, true);
                 break;
 
-            case SKYSTONE_POSITION_2:
+            case SKYSTONE_POSITION_2_5:
                 robot.turnLeftTillDegrees(270, true, true);
                 robot.driveBackwardTillRotation(0.30, 0.50, 270, false, true);
                 robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
@@ -166,7 +166,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
                 robot.driveLeftTillRotation(1.25, 0.50, 270, false, true);
                 break;
 
-            case SKYSTONE_POSITION_3:
+            case SKYSTONE_POSITION_1_4:
                 robot.turnLeftTillDegrees(270, true, false);
                 robot.driveForwardTillRotation(0.15, 0.50, 270, false, false);
                 robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
@@ -192,15 +192,15 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
         double distanceToGo = 3.75;
         switch (skystonePosition) {
-            case SKYSTONE_POSITION_1:
+            case SKYSTONE_POSITION_3_6:
                 distanceToGo = 3.75;
                 break;
 
-            case SKYSTONE_POSITION_2:
+            case SKYSTONE_POSITION_2_5:
                 distanceToGo = 4.00;
                 break;
 
-            case SKYSTONE_POSITION_3:
+            case SKYSTONE_POSITION_1_4:
                 distanceToGo = 4.25;
                 break;
         }

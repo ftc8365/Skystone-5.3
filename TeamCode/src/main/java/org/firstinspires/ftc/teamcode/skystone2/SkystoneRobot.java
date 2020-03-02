@@ -34,6 +34,7 @@ public class SkystoneRobot {
     // Neverest 20 motors = 560 ticks per rotation
     // Neverest 40 moteos = 1120 tickers per rotation
     final int TICK_PER_WHEEL_ROTATION   = 560;
+    final int TICK_PER_WHEEL_ODOMETRY_ROTATION = 7500;
 
     final int AUTONOMOUS_DURATION_MSEC  = 29800;
 
@@ -43,6 +44,8 @@ public class SkystoneRobot {
     final double RAMP_UP_RATE_STRAFE    = 0.05;
 
     final double RAMP_DOWN_DRIVE_TICKS  = 150;
+    final double RAMP_DOWN_DRIVE_ODOMETRY_TICKS  = 150;
+
     final double RAMP_DOWN_DRIVE_RANGE  = 15;
     final double RAMP_DOWN_TURN_DEGREES = 30;
     final double RAMP_DOWN_STRAFE_TICKS = 150;
@@ -52,12 +55,6 @@ public class SkystoneRobot {
     final double MIN_STRAFE_POWER       = 0.20;
     final double TURN_POWER             = 0.70;
     final double TURN_TOLERANCE         = 5.0;
-
-    double rangeSensorBRAverage         = 0;
-    double rangeSensorBLAverage         = 0;
-    double rangeSensorBRLast            = 0;
-    double rangeSensorBLLast            = 0;
-
 
     ///////////////////MAKE CHANGE HERE IF NEEDED//////MAKE CHANGE TO ALL 4 VALUES//////////
 
@@ -96,9 +93,9 @@ public class SkystoneRobot {
 
     enum SkystonePosition {
         SKYSTONE_POSITION_UNKNOWN,
-        SKYSTONE_POSITION_1,
-        SKYSTONE_POSITION_2,
-        SKYSTONE_POSITION_3
+        SKYSTONE_POSITION_3_6,
+        SKYSTONE_POSITION_2_5,
+        SKYSTONE_POSITION_1_4
     }
 
     enum LatchPosition {
@@ -124,6 +121,8 @@ public class SkystoneRobot {
     public DcMotor motorLiftRight  = null;
     public DcMotor motorTape = null;
 //    public DcMotor motorLiftLeft   = null;
+
+    private PIDController pidController = new PIDController();
 
     /////////////////////
     // Declare vuforia tensorflow variables
@@ -163,9 +162,8 @@ public class SkystoneRobot {
     // Declare sensors
     /////////////////////
     /////////////////////
-//    ModernRoboticsI2cRangeSensor    rangeSensorBR   = null;
-//    ModernRoboticsI2cRangeSensor    rangeSensorBL   = null;
-    DistanceSensor                  rangeSensor   = null;
+    DistanceSensor                  rangeSensorFront   = null;
+    DistanceSensor                  rangeSensorBack   = null;
 
     DistanceSensor                  distanceSensor  = null;
     IntegratingGyroscope            gyro            = null;
@@ -232,6 +230,10 @@ public class SkystoneRobot {
         motorBL.setDirection(DcMotor.Direction.REVERSE);
         motorBL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        motorTape  = opMode.hardwareMap.get(DcMotor.class, "motorTape");
+        motorTape.setDirection(DcMotor.Direction.FORWARD);
+        motorTape.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,16 +263,13 @@ public class SkystoneRobot {
 //        motorLiftLeft.setDirection(DcMotor.Direction.REVERSE);
 //        motorLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motorTape  = opMode.hardwareMap.get(DcMotor.class, "motorTape");
-        motorTape.setDirection(DcMotor.Direction.FORWARD);
-        motorTape.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
     }
 
     public void initRangeSensors() {
 //        rangeSensorBR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
 //        rangeSensorBL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
-        rangeSensor = opMode.hardwareMap.get(DistanceSensor.class, "range_sensor");
+        rangeSensorFront = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorFront");
+        rangeSensorBack = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorBack");
     }
 
     public void initColorSensors() {
@@ -600,7 +599,6 @@ public class SkystoneRobot {
                 }
                 powerRight +=  2 * (headingChange / 100);
                 powerLeft  -=  2 * (headingChange / 100);
-
             }
 
             motorFR.setPower( powerRight );
@@ -694,7 +692,7 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveForwardTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveForwardTillRotationOrCOlor( double rotation, Color color, double targetPower, boolean rampDown, boolean stopMotors )
+    public void driveForwardTillRotationOrCOlor( double rotation, double targetPower, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign = false;
 
@@ -707,7 +705,7 @@ public class SkystoneRobot {
 
         while (continueAutonomus()) {
 
-            if (this.colorDetected(color))
+            if (this.isColorBlue() || this.isColorRed())
                 break;
 
             ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (motorFR.getCurrentPosition() - initPosition);
@@ -836,8 +834,20 @@ public class SkystoneRobot {
         }
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     double getMinRangeInInches() {
-        double range = this.rangeSensor.getDistance(DistanceUnit.INCH);
+        double range = this.rangeSensorBack.getDistance(DistanceUnit.INCH);
+
+        if (range == 0)
+            range = 255;
+
+        return range;
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double getFrontRangeInInches() {
+        double range = this.rangeSensorFront.getDistance(DistanceUnit.INCH);
 
         if (range == 0)
             range = 255;
@@ -888,24 +898,75 @@ public class SkystoneRobot {
         }
     }
 
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // driveForwardTillRange
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public void driveForwardTillRange( double rangeInInches, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    {
+        boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
+        double power            = 0.10;
+
+        while (continueAutonomus()) {
+
+            double curRange = getFrontRangeInInches();
+            if (curRange <= rangeInInches )
+                break;
+
+            power = getDriveRangePower(power, curRange, targetPower);
+
+            double powerRight = power;
+            double powerLeft  = power;
+
+            // Adjusting motor power based on gyro position
+            // to force the robot to move straight
+            if (useGyroToAlign) {
+                double currentPosition = this.getCurrentPositionInDegrees();
+                double headingChange   = currentPosition - targetHeading;
+
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
+                }
+                powerRight +=  2 * (headingChange / 100);
+                powerLeft  -=  2 * (headingChange / 100);
+            }
+
+            motorFR.setPower( powerRight );
+            motorFL.setPower( powerLeft );
+            motorBR.setPower( powerRight );
+            motorBL.setPower( powerLeft );
+        }
+
+        if (stopMotors) {
+            this.stopDriveMotors();
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // getOdometryPosition
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    int getOdometryPosition() {
+        return motorTape.getCurrentPosition();
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveLeftTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void driveLeftTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
-        int initPosition        = motorFR.getCurrentPosition();
+        int initPosition        = getOdometryPosition();
         int ticksToGo           = 0;
         double power            = 0.0;
 
         while (continueAutonomus()) {
 
-            ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (motorFR.getCurrentPosition() - initPosition);
+            ticksToGo = (int)(TICK_PER_WHEEL_ODOMETRY_ROTATION * rotation) - (getOdometryPosition() - initPosition);
 
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getSidewayDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerFront = power;
             double powerBack  = power;
@@ -942,19 +1003,19 @@ public class SkystoneRobot {
     public void driveRightTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
-        int initPosition        = motorFR.getCurrentPosition();
+        int initPosition        = getOdometryPosition();
+
         int ticksToGo           = 0;
 
         double power = 0.0;
 
         while (continueAutonomus()) {
 
-            ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (initPosition - motorFR.getCurrentPosition());
-
+            ticksToGo = (int)(TICK_PER_WHEEL_ODOMETRY_ROTATION * rotation) - (initPosition - getOdometryPosition());
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower( power, ticksToGo, targetPower, rampDown );
+            power = pidController.getSidewayDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerFront = power;
             double powerBack  = power;
@@ -1244,7 +1305,7 @@ public class SkystoneRobot {
         if (updatedRecognitions != null) {
             for (Recognition recognition : updatedRecognitions) {
                 if (recognition.getLabel().equals("Skystone"))
-                    return SkystonePosition.SKYSTONE_POSITION_1;
+                    return SkystonePosition.SKYSTONE_POSITION_3_6;
             }
         }
 
@@ -1257,11 +1318,11 @@ public class SkystoneRobot {
             if (updatedRecognitions != null) {
                 for (Recognition recognition : updatedRecognitions) {
                     if (recognition.getLabel().equals("Skystone"))
-                        return SkystonePosition.SKYSTONE_POSITION_2;
+                        return SkystonePosition.SKYSTONE_POSITION_2_5;
                 }
             }
 
-            return SkystonePosition.SKYSTONE_POSITION_3;
+            return SkystonePosition.SKYSTONE_POSITION_1_4;
         }
 
         return previousPosition;
@@ -1383,12 +1444,15 @@ public class SkystoneRobot {
     }
 
     public void dropStone() {
-        setV4BLState(V4BLState.V4BL_STATE_FOUNDATION);
 
         try {
+            setV4BLState(V4BLState.V4BL_STATE_TOP);
             Thread.sleep(200);
+            setV4BLState(V4BLState.V4BL_STATE_FOUNDATION);
+
+            Thread.sleep(350);
             raiseGrabber();
-            Thread.sleep(500);
+            Thread.sleep(350);
             setV4BLState(V4BLState.V4BL_STATE_STONE);
         }
         catch (Exception e) {
@@ -1408,6 +1472,26 @@ public class SkystoneRobot {
     public boolean isV4BLState( V4BLState state ) {
         return ((Math.abs(this.currentV4BLPos - state.servoPos)) <= 0.05);
     }
+
+
+    public boolean isV4BLStateIntake2Foundation() {
+        return this.currentV4BLPos >= V4BLState.V4BL_STATE_INTAKE.servoPos &&
+                this.currentV4BLPos <= V4BLState.V4BL_STATE_FOUNDATION.servoPos;
+    }
+
+    public boolean isV4BLStateTop2Foundation() {
+        return this.currentV4BLPos >= V4BLState.V4BL_STATE_TOP.servoPos &&
+                this.currentV4BLPos <= V4BLState.V4BL_STATE_FOUNDATION.servoPos;
+    }
+
+    public boolean isV4BLStateStone2Top() {
+        return this.currentV4BLPos >= V4BLState.V4BL_STATE_STONE.servoPos &&
+                this.currentV4BLPos <= V4BLState.V4BL_STATE_TOP.servoPos;
+    }
+
+
+
+
 
     public void raiseServoShuttle() {
        servoShuttle.setPosition(0.2);
