@@ -148,29 +148,29 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+        robot.driveForwardTillRotation(1.50,0.20,0.50,0, true, false);
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_3_6:
-                robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
-                robot.driveBackwardTillRotation(1.20, 0.50, 0, true, true);
+                robot.driveForwardTillRotation(1.75, 0.5,0.30, 0, false, false);
+                robot.driveBackwardTillRotation(1.20, 0.30,0.50, 0, true, true);
                 break;
 
             case SKYSTONE_POSITION_2_5:
                 robot.turnLeftTillDegrees(270, true, true);
-                robot.driveBackwardTillRotation(0.30, 0.50, 270, false, true);
+                robot.driveBackwardTillRotation(0.30, 0.20,0.50, 270, false, true);
                 robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
 
-                robot.driveForwardTillRotation(0.45, 0.30, 270, false, true);
+                robot.driveForwardTillRotation(0.45, 0.30,0.30, 270, false, true);
                 sleep(250);
                 robot.driveLeftTillRotation(1.25, 0.50, 270, false, true);
                 break;
 
             case SKYSTONE_POSITION_1_4:
                 robot.turnLeftTillDegrees(270, true, false);
-                robot.driveForwardTillRotation(0.15, 0.50, 270, false, false);
+                robot.driveForwardTillRotation(0.15,0.50, 0.50, 270, false, false);
                 robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
-                robot.driveForwardTillRotation(0.45, 0.30, 270, false, true);
+                robot.driveForwardTillRotation(0.45, 0.50,0.30, 270, false, true);
                 sleep(250);
                 robot.driveLeftTillRotation(1.25, 0.50, 270, false, true);
                 robot.stopDriveMotors();
@@ -205,16 +205,16 @@ public class AutonomousRedFoundation extends LinearOpMode {
                 break;
         }
 
-        robot.driveBackwardTillRotation(distanceToGo, 0.7, 270, false, false);
-        robot.driveBackwardTillRange(11.5, 0.35, 270, false);
-        robot.driveForwardTillRotation(0.20, 0.50, 270, false, false);
+        robot.driveBackwardTillRotation(distanceToGo, 0.70,0.7, 270, false, false);
+        robot.driveBackwardTillRange(11.5, 0.70,0.50, 270, false);
+        robot.driveForwardTillRotation(0.20, 0.35,0.50, 270, false, false);
         robot.turnLeftTillDegrees(180, true, true);
 
         robot.driveBackwardTillTime(1000,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
         /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
-        robot.driveForwardTillRotation(1.1,0.6,180,true,true);
+        robot.driveForwardTillRotation(1.1,0.6,0.6,180,true,true);
     }
 
     void dropSkystone(){
@@ -239,7 +239,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.driveLeftTillRotation(0.20,0.5,270,false,true);
 
         robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
-        robot.driveForwardTillRotation(3.0,0.60,270,false,true);
+        robot.driveForwardTillRotation(3.0,0.60,0.60,270,false,true);
     }
 
 }

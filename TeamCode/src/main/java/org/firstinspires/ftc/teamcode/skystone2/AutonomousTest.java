@@ -105,17 +105,24 @@ public class AutonomousTest extends LinearOpMode {
         //robot.servoCamera.setPosition(1.0);
 
 
+
+        robot.turnRightTillDegrees(75,0.6,false,false);
+        robot.driveBackwardTillRange(18,0.70,0.50, 90, true);
+
         runtime.reset();
-
-        robot.driveForwardTillRange(26, 0.4,0, true, true);
-        robot.driveLeftTillRotation(0.25, 0.60, 0, false, false);
-        robot.driveForwardTillRotation(0.25, 0.30, 0, false, true);
+        robot.turnRightTillDegrees(170, false, false);
+        robot.driveBackwardTillTime(500,0.25,true);
+        robot.lowerFoundationServos();
         sleep(500);
-        robot.driveRightTillRotation(0.25, 0.60, 0, false, false);
-        robot.driveBackwardTillRotation(2.00,0.80,0, false, true);
+
+        robot.driveForwardTillRotation(0.75,0.4,0.6,180,true,true);
+
+        robot.turnLeftTillDegrees(85, 1.0, true, true);
+        robot.driveBackwardTillTime(1000, 0.35, true);
+        robot.raiseFoundationServos();
 
 
-
+        // 1 - 5.3 sec
 
         double sec = runtime.seconds();
 //        robot.grabStone();
@@ -130,7 +137,7 @@ public class AutonomousTest extends LinearOpMode {
 
         while (opModeIsActive() ) {
 
-            telemetry.addData( "Seconds", sec);
+            telemetry.addData( "Sec", sec);
 
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());

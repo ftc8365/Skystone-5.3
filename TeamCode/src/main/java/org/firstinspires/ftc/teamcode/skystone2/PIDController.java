@@ -46,10 +46,11 @@ public class PIDController {
     }
 
 
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // getDrivePower
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private double getDrivePower( double curPower, double ticksToGo, double targetPower, boolean rampDown ) {
+    public double getDrivePower( double curPower, double ticksToGo, double targetPower, boolean rampDown ) {
         double power = curPower;
 
         // Ramp down power
@@ -58,6 +59,9 @@ public class PIDController {
 
             if (power < this.MIN_DRIVE_POWER)
                 power = MIN_DRIVE_POWER;
+
+        } else if (rampDown && (curPower > targetPower)) {
+            power -= (curPower - targetPower) / 5;
         }
         else if (targetPower - power > 0.001) {
             power += this.RAMP_UP_RATE_DRIVE;
@@ -65,7 +69,6 @@ public class PIDController {
 
         return power;
     }
-
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // getDrivePower

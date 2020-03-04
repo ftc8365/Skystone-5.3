@@ -141,45 +141,6 @@ public class AutonomousBlueStone extends LinearOpMode {
     }
 
     void grabSkystone() {
-        if (!opModeIsActive())
-            return;
-
-        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-
-        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
-
-        switch (skystonePosition) {
-            case SKYSTONE_POSITION_3_6:
-                robot.driveForwardTillRotation(1.75, 0.30, 0, false, false);
-                robot.driveBackwardTillRotation(1.20, 0.50, 0, true, true);
-                break;
-
-            case SKYSTONE_POSITION_2_5:
-                robot.turnRightTillDegrees(90, true, false);
-                robot.driveBackwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
-                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
-                sleep(500);
-                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
-                break;
-
-            case SKYSTONE_POSITION_1_4:
-                robot.turnRightTillDegrees(90, true, false);
-                robot.driveForwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.2, 0.50, 90, false, false);
-                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
-                sleep(500);
-                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
-                break;
-        }
-
-        robot.turnIntakeoff();
-
-        if (robot.stoneDetected()) {
-            robot.grabStone();
-        }
-
-        robot.turnRightTillDegrees(80, false, true);
     }
 
     void crossAllianceBridge() {
@@ -202,7 +163,7 @@ public class AutonomousBlueStone extends LinearOpMode {
                 break;
         }
 
-        robot.driveBackwardTillRotation(distanceToGo, 0.7, 90, true, true);
+        robot.driveBackwardTillRotation(distanceToGo, 0.7,0.7, 90, true, true);
     }
 
     void dropSkystone(){
@@ -214,7 +175,7 @@ public class AutonomousBlueStone extends LinearOpMode {
     }
 
     void moveUnderAllianceBridge() {
-        robot.driveForwardTillRotation(1.0,0.60,90,false,true);
+        robot.driveForwardTillRotation(1.0,0.10,0.60,90,false,true);
     }
 
 }

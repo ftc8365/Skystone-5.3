@@ -46,7 +46,7 @@ public class SkystoneRobot {
     final double RAMP_DOWN_DRIVE_TICKS  = 150;
     final double RAMP_DOWN_DRIVE_ODOMETRY_TICKS  = 150;
 
-    final double RAMP_DOWN_DRIVE_RANGE  = 15;
+    final double RAMP_DOWN_DRIVE_RANGE  = 10;
     final double RAMP_DOWN_TURN_DEGREES = 30;
     final double RAMP_DOWN_STRAFE_TICKS = 150;
 
@@ -96,6 +96,12 @@ public class SkystoneRobot {
         SKYSTONE_POSITION_3_6,
         SKYSTONE_POSITION_2_5,
         SKYSTONE_POSITION_1_4
+    }
+
+    enum FoundationServoPosition {
+        FOUNDATION_SERVO_UP,
+        FOUNDATION_SERVO_MIDDLE,
+        FOUNDATION_SERVO_DOWN
     }
 
     enum LatchPosition {
@@ -566,12 +572,12 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveForwardTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveForwardTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public void driveForwardTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = motorFL.getCurrentPosition();
         int ticksToGo           = 0;
-        double power            = 0.0;
+        double power            = initPower;
 
         while (continueAutonomus()) {
 
@@ -583,7 +589,7 @@ public class SkystoneRobot {
                 break;
 
             //get power based on distance
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
             double powerLeft  = power;
@@ -640,7 +646,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             motorFR.setPower( power );
             motorFL.setPower( 0 );
@@ -673,7 +679,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             motorFR.setPower( 0 );
             motorFL.setPower( power );
@@ -713,7 +719,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
             double powerLeft  = power;
@@ -736,12 +742,12 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveBackwardTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveBackwardTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public void driveBackwardTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = getCurrentDrivePosition();
         int ticksToGo           = 0;
-        double power            = 0.0;
+        double power            = initPower;
 
         while (continueAutonomus()) {
             ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (initPosition - getCurrentDrivePosition());
@@ -749,7 +755,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
             double powerLeft  = power;
@@ -821,7 +827,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             motorFR.setPower( power * -1);
             motorFL.setPower( power * -1);
@@ -858,18 +864,19 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveBackwardTillRange
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveBackwardTillRange( double rangeInInches, double targetPower, int targetHeading, boolean stopMotors )
+    public void driveBackwardTillRange( double targetRange, double initPower, double targetPower, int targetHeading, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
-        double power            = 0.10;
+        double power            = initPower;
 
         while (continueAutonomus()) {
 
             double curRange = getMinRangeInInches();
-            if (curRange <= rangeInInches )
+            double rangeToGo = curRange - targetRange;
+            if (rangeToGo <= 1 )
                 break;
 
-            power = getDriveRangePower(power, curRange, targetPower);
+            power = getDriveRangePower(power, rangeToGo, targetPower);
 
             double powerRight = power;
             double powerLeft  = power;
@@ -1160,26 +1167,6 @@ public class SkystoneRobot {
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // getDrivePower
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private double getDrivePower( double curPower, double ticksToGo, double targetPower, boolean rampDown ) {
-        double power = curPower;
-
-        // Ramp down power
-        if ( rampDown && (ticksToGo <= RAMP_DOWN_DRIVE_TICKS) ) {
-            power = ( ticksToGo / RAMP_DOWN_DRIVE_TICKS)  * curPower;
-
-            if (power < this.MIN_DRIVE_POWER)
-                power = MIN_DRIVE_POWER;
-        }
-        else if (targetPower - power > 0.001) {
-            power += this.RAMP_UP_RATE_DRIVE;
-        }
-
-        return power;
-    }
-
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // getDrivePower
@@ -1292,33 +1279,55 @@ public class SkystoneRobot {
 //        this.motorLift.setPower( 0 );
     }
 
+    public boolean inInitializationState() {
+        return (!opMode.opModeIsActive() && !opMode.isStopRequested());
+    }
+
     public SkystonePosition scanSkystone( SkystonePosition previousPosition ) {
         double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.46;
         double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.40;
 
         setServoPosition(this.servoCamera, servoPos1, 0);
 
-        opMode.sleep(1000);
+        this.autonomusTimer.reset();
 
-        List<Recognition> updatedRecognitions = getTensorFlowRecognitions();
-
-        if (updatedRecognitions != null) {
-            for (Recognition recognition : updatedRecognitions) {
-                if (recognition.getLabel().equals("Skystone"))
-                    return SkystonePosition.SKYSTONE_POSITION_3_6;
-            }
+        while (inInitializationState() && autonomusTimer.milliseconds() < 1000) {
+            opMode.sleep(1);
         }
 
-        if (!opMode.opModeIsActive() && !opMode.isStopRequested()) {
-            setServoPosition(servoCamera, servoPos2, 0);
+        List<Recognition> updatedRecognitions = null;
 
-            opMode.sleep(1000);
+        if (inInitializationState()) {
+
             updatedRecognitions = getTensorFlowRecognitions();
 
             if (updatedRecognitions != null) {
                 for (Recognition recognition : updatedRecognitions) {
                     if (recognition.getLabel().equals("Skystone"))
-                        return SkystonePosition.SKYSTONE_POSITION_2_5;
+                        return SkystonePosition.SKYSTONE_POSITION_3_6;
+                }
+            }
+        }
+
+        if (inInitializationState()) {
+
+            setServoPosition(servoCamera, servoPos2, 0);
+
+            this.autonomusTimer.reset();
+
+            while (inInitializationState() && autonomusTimer.milliseconds() < 1000) {
+                opMode.sleep(1);
+            }
+
+            if (inInitializationState()) {
+
+                updatedRecognitions = getTensorFlowRecognitions();
+
+                if (updatedRecognitions != null) {
+                    for (Recognition recognition : updatedRecognitions) {
+                        if (recognition.getLabel().equals("Skystone"))
+                            return SkystonePosition.SKYSTONE_POSITION_2_5;
+                    }
                 }
             }
 
@@ -1365,7 +1374,7 @@ public class SkystoneRobot {
             if (ticksToGo <= 0)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
             double powerLeft  = power;
@@ -1419,15 +1428,31 @@ public class SkystoneRobot {
     }
 
 
-    public void lowerFoundationServos() {
-        servoFoundationLeft.setPosition(1.00);
-        servoFoundationRight.setPosition(0.00);
+    public void setFoundationServos( FoundationServoPosition position ) {
+        switch (position) {
+            case FOUNDATION_SERVO_UP:
+                servoFoundationLeft.setPosition(0.35);
+                servoFoundationRight.setPosition(0.65);
+                break;
+            case FOUNDATION_SERVO_MIDDLE:
+                servoFoundationLeft.setPosition(0.75);
+                servoFoundationRight.setPosition(0.25);
+                break;
+            case FOUNDATION_SERVO_DOWN:
+                servoFoundationLeft.setPosition(1.00);
+                servoFoundationRight.setPosition(0.00);
+                break;
+        }
     }
 
     public void raiseFoundationServos() {
-        servoFoundationLeft.setPosition(0.35);
-        servoFoundationRight.setPosition(0.65);
+        setFoundationServos(FoundationServoPosition.FOUNDATION_SERVO_UP);
     }
+
+    public void lowerFoundationServos() {
+        setFoundationServos(FoundationServoPosition.FOUNDATION_SERVO_DOWN);
+    }
+
 
     public void raiseLift() {
         this.motorLiftRight.setPower(0.50);
@@ -1533,7 +1558,7 @@ public class SkystoneRobot {
             if (degreesToGo <= TURN_TOLERANCE)
                 break;
 
-            power = this.getDrivePower(power, ticksToGo, targetPower, rampDown);
+            power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
             double powerRight = power;
             double powerLeft  = power;

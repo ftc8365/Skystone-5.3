@@ -122,13 +122,27 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
+
+        telemetry.update();
+
+
+        // REMOVE LATER
+        while (opModeIsActive() ) {
+            sleep(100);
+        }
+
     }
 
     void startAuto() {
-        robot.shutdownTensorFlow();
         robot.resetAutonomousTimer();
+
+        telemetry.addData("startAuto Begin", robot.autonomusTimer.milliseconds());
+
+        robot.shutdownTensorFlow();
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
         robot.servoCamera.setPosition(0.3);
+
+        telemetry.addData("startAuto End", robot.autonomusTimer.milliseconds());
     }
 
     /*
@@ -147,16 +161,19 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
 
     void grabSkystone() {
+
+        telemetry.addData("grabSkyStone Begin", robot.autonomusTimer.milliseconds());
+
         if (!opModeIsActive())
             return;
 
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        robot.driveForwardTillRotation(1.50,0.50,0, true, false);
+        robot.driveForwardTillRotation(1.50,0.10,0.50,0, true, false);
 
         switch (skystonePosition) {
             case SKYSTONE_POSITION_3_6:
-                robot.driveForwardTillRotation(1.75, 0.30, 0, false, true);
+                robot.driveForwardTillRotation(1.75, 0.50, 0.30, 0, false, true);
 
                 runtime.reset();
 
@@ -168,34 +185,40 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 }
 
                 robot.turnIntakeoff();
+
+//                robot.driveBackwardTillRotation(1.20, 0.30, 0.50, 0, true, false);
+//                robot.turnRightTillDegrees(80, false, true);
+
                 robot.curveBackwardTillRotation(1.0, 0.5, 90, false, true);
 
                 break;
 
             case SKYSTONE_POSITION_2_5:
-                robot.turnRightTillDegrees(80, false, false);
-                robot.driveBackwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.25, 0.50, 90, false, false);
-                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
-                sleep(500);
-                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
+                robot.turnRightTillDegrees(85, true, true);
+                robot.driveBackwardTillRotation(0.25, 0.20,0.50, 90, false, false);
+                robot.driveLeftTillRotation(0.50, 0.50, 90, false, false);
+                robot.driveForwardTillRotation(0.45, 0.10,0.30, 90, false, true);
+                sleep(250);
+                robot.driveRightTillRotation(0.50, 0.50, 90, false, true);
 
                 robot.turnIntakeoff();
 
                 if (robot.stoneDetected()) {
+                    telemetry.addData("grabStone Begin", robot.autonomusTimer.milliseconds());
                     robot.grabStone();
+                    telemetry.addData("grabStone End", robot.autonomusTimer.milliseconds());
                 }
 
                 robot.turnRightTillDegrees(80, false, true);
                 break;
 
             case SKYSTONE_POSITION_1_4:
-                robot.turnRightTillDegrees(80, false, false);
-                robot.driveForwardTillRotation(0.25, 0.50, 90, false, false);
-                robot.driveLeftTillRotation(1.25, 0.50, 90, false, false);
-                robot.driveForwardTillRotation(0.25, 0.30, 90, false, true);
+                robot.turnRightTillDegrees(85, true, true);
+                robot.driveForwardTillRotation(0.25, 0.20, 0.50, 90, false, false);
+                robot.driveLeftTillRotation(0.50, 0.50, 90, false, false);
+                robot.driveForwardTillRotation(0.25, 0.50,0.30, 90, false, true);
                 sleep(500);
-                robot.driveRightTillRotation(1.25, 0.50, 90, false, true);
+                robot.driveRightTillRotation(0.50, 0.50, 90, false, true);
 
                 robot.turnIntakeoff();
 
@@ -208,9 +231,13 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 break;
         }
 
+        telemetry.addData("grabSkyStone End", robot.autonomusTimer.milliseconds());
+
     }
 
     void grabFoundation() {
+        telemetry.addData("grabFoundation Begin", robot.autonomusTimer.milliseconds());
+
         if (!opModeIsActive())
             return;
 
@@ -230,42 +257,53 @@ public class AutonomousBlueFoundation extends LinearOpMode {
                 break;
         }
 
-        robot.driveBackwardTillRotation(distanceToGo, 0.7, 90, false, false);
-        robot.driveBackwardTillRange(11.5, 0.35, 90, true);
-        robot.driveForwardTillRotation(0.20, 0.50, 90, false, false);
-        robot.turnRightTillDegrees(180, true, true);
+        robot.driveBackwardTillRotation(distanceToGo, 0.70,0.7, 90, false, false);
+        robot.driveBackwardTillRange(13, 0.70,0.50, 90, false);
+//        robot.driveForwardTillRotation(0.20, 0.50, 90, false, false);
+        robot.turnRightTillDegrees(170, false, false);
 
         robot.driveBackwardTillTime(750,0.25,true);
         robot.lowerFoundationServos();
         sleep(500);
 
         /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
-        robot.driveForwardTillRotation(0.75,0.6,180,true,true);
+        robot.driveForwardTillRotation(0.75,0.4,0.6,180,true,true);
+
+        telemetry.addData("grabFoundation End", robot.autonomusTimer.milliseconds());
     }
 
     void dropSkystone() {
-        if (!opModeIsActive())
-            return;
+        telemetry.addData("dropSkystone Begin", robot.autonomusTimer.milliseconds());
 
-        if (robot.stoneDetected())
+        if (opModeIsActive() && robot.stoneDetected())
             robot.dropStone();
+
+        telemetry.addData("dropSkystone End", robot.autonomusTimer.milliseconds());
     }
 
     void turnFoundation() {
-        if (!opModeIsActive())
-            return;
+        telemetry.addData("turnFoundation Begin", robot.autonomusTimer.milliseconds());
 
-        robot.turnLeftTillDegrees(85, 0.90,true,true);
-        robot.driveBackwardTillTime(1000,0.35, true);
-        robot.raiseFoundationServos();
-        robot.driveLeftTillRotation(0.20,0.5,90,false,true);
+        if (opModeIsActive()) {
+            robot.turnLeftTillDegrees(85, 0.90, true, true);
+            robot.driveBackwardTillTime(1000, 0.35, true);
+            robot.raiseFoundationServos();
+            robot.driveLeftTillRotation(0.20, 0.5, 90, false, true);
+        }
+
+        telemetry.addData("turnFoundation End", robot.autonomusTimer.milliseconds());
     }
 
     void moveUnderAllianceBridge() {
-        robot.driveRightTillRotation(0.20,0.5,90,false,true);
+        telemetry.addData("moveUnderAllianceBridge Begin", robot.autonomusTimer.milliseconds());
 
-        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
-        robot.driveForwardTillRotation(3.0,0.60,90,false,true);
+        if (opModeIsActive()) {
+            robot.driveRightTillRotation(0.20, 0.5, 90, false, true);
+
+            robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
+            robot.driveForwardTillRotation(3.0, 0.60, 0.60, 90, false, true);
+        }
+        telemetry.addData("moveUnderAllianceBridge End", robot.autonomusTimer.milliseconds());
     }
 
 }
