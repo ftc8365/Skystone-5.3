@@ -33,7 +33,7 @@ public class SkystoneRobot {
 
     // Neverest 20 motors = 560 ticks per rotation
     // Neverest 40 moteos = 1120 tickers per rotation
-    final int TICK_PER_WHEEL_ROTATION   = 560;
+    final public int TICK_PER_WHEEL_ROTATION   = 560;
     final int TICK_PER_WHEEL_ODOMETRY_ROTATION = 7500;
 
     final int AUTONOMOUS_DURATION_MSEC  = 29800;
@@ -93,9 +93,9 @@ public class SkystoneRobot {
 
     enum SkystonePosition {
         SKYSTONE_POSITION_UNKNOWN,
-        SKYSTONE_POSITION_3_6,
-        SKYSTONE_POSITION_2_5,
-        SKYSTONE_POSITION_1_4
+        SKYSTONE_POSITION_1,
+        SKYSTONE_POSITION_2,
+        SKYSTONE_POSITION_3
     }
 
     enum FoundationServoPosition {
@@ -570,6 +570,14 @@ public class SkystoneRobot {
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // driveForwardTillTicks
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public void driveForwardTillTicks( double ticks, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors ) {
+        driveForwardTillRotation( ticks/TICK_PER_WHEEL_ROTATION, initPower, targetPower, targetHeading, rampDown, stopMotors );
+
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveForwardTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void driveForwardTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
@@ -959,12 +967,12 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveLeftTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveLeftTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public void driveLeftTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = getOdometryPosition();
         int ticksToGo           = 0;
-        double power            = 0.0;
+        double power            = initPower;
 
         while (continueAutonomus()) {
 
@@ -1007,14 +1015,12 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveRightTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveRightTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public void driveRightTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = getOdometryPosition();
-
         int ticksToGo           = 0;
-
-        double power = 0.0;
+        double power            = initPower;
 
         while (continueAutonomus()) {
 
@@ -1263,26 +1269,13 @@ public class SkystoneRobot {
         motorIntakeLeft.setPower(0);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // lockLiftMotor
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void lockLiftMotors() {
-
-//        this.motorLift.setPower( 0.25 );
-    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // unlockLiftMotor
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void unlockLiftMotors() {
-
-//        this.motorLift.setPower( 0 );
-    }
-
     public boolean inInitializationState() {
         return (!opMode.opModeIsActive() && !opMode.isStopRequested());
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public SkystonePosition scanSkystone( SkystonePosition previousPosition ) {
         double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.46;
         double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.40;
@@ -1304,7 +1297,7 @@ public class SkystoneRobot {
             if (updatedRecognitions != null) {
                 for (Recognition recognition : updatedRecognitions) {
                     if (recognition.getLabel().equals("Skystone"))
-                        return SkystonePosition.SKYSTONE_POSITION_3_6;
+                        return SkystonePosition.SKYSTONE_POSITION_1;
                 }
             }
         }
@@ -1326,12 +1319,12 @@ public class SkystoneRobot {
                 if (updatedRecognitions != null) {
                     for (Recognition recognition : updatedRecognitions) {
                         if (recognition.getLabel().equals("Skystone"))
-                            return SkystonePosition.SKYSTONE_POSITION_2_5;
+                            return SkystonePosition.SKYSTONE_POSITION_2;
                     }
                 }
-            }
 
-            return SkystonePosition.SKYSTONE_POSITION_1_4;
+                return SkystonePosition.SKYSTONE_POSITION_3;
+            }
         }
 
         return previousPosition;
@@ -1347,7 +1340,7 @@ public class SkystoneRobot {
                 break;
             case LATCH_POSITION_1:
                 servoIntakeRight.setPosition(0.05);
-                servoIntakeLeft.setPosition(0.35);
+                servoIntakeLeft.setPosition(0.50);
                 break;
         }
     }
@@ -1468,6 +1461,22 @@ public class SkystoneRobot {
         lowerGrabber();
     }
 
+
+    public void dropStone2() {
+
+        try {
+//            setV4BLState(V4BLState.V4BL_STATE_TOP);
+            setV4BLPosition(V4BLState.V4BL_STATE_TOP.servoPos + 0.10);
+            Thread.sleep(300);
+            raiseGrabber();
+            Thread.sleep(250);
+            setV4BLState(V4BLState.V4BL_STATE_INTAKE);
+        }
+        catch (Exception e) {
+
+        }
+    }
+
     public void dropStone() {
 
         try {
@@ -1477,8 +1486,8 @@ public class SkystoneRobot {
 
             Thread.sleep(350);
             raiseGrabber();
-            Thread.sleep(350);
-            setV4BLState(V4BLState.V4BL_STATE_STONE);
+            Thread.sleep(250);
+            setV4BLState(V4BLState.V4BL_STATE_INTAKE);
         }
         catch (Exception e) {
 
@@ -1513,9 +1522,6 @@ public class SkystoneRobot {
         return this.currentV4BLPos >= V4BLState.V4BL_STATE_STONE.servoPos &&
                 this.currentV4BLPos <= V4BLState.V4BL_STATE_TOP.servoPos;
     }
-
-
-
 
 
     public void raiseServoShuttle() {

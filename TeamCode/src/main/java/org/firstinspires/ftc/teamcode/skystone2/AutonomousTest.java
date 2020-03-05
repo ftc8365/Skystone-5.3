@@ -102,24 +102,55 @@ public class AutonomousTest extends LinearOpMode {
             telemetry.update();
         }
 
+        if (robot.stoneDetected()) {
+            robot.grabStone();
+        }
+
         //robot.servoCamera.setPosition(1.0);
 
+        int[] positions = new int[10];
 
+        positions[0] = robot.getOdometryPosition();
 
         robot.turnRightTillDegrees(75,0.6,false,false);
-        robot.driveBackwardTillRange(18,0.70,0.50, 90, true);
+        positions[1] = robot.getOdometryPosition();
+
+        robot.driveBackwardTillRotation(1.0,0.70,0.70, 90, false, false);
+
+        robot.driveBackwardTillRange(20,0.70,0.35, 90, true);
+        positions[2] = robot.getOdometryPosition();
 
         runtime.reset();
-        robot.turnRightTillDegrees(170, false, false);
+
+        robot.turnRightTillDegrees(170, false, true);
+        positions[3] = robot.getOdometryPosition();
+
+        robot.setFoundationServos(SkystoneRobot.FoundationServoPosition.FOUNDATION_SERVO_MIDDLE);
+
+        long startBackupPos = robot.motorFR.getCurrentPosition();
         robot.driveBackwardTillTime(500,0.25,true);
+        positions[4] = robot.getOdometryPosition();
+        long endBackupPos = robot.motorFR.getCurrentPosition();
+
         robot.lowerFoundationServos();
-        sleep(500);
+        sleep(250);
 
-        robot.driveForwardTillRotation(0.75,0.4,0.6,180,true,true);
+        long distanceMoved = startBackupPos - endBackupPos;
 
-        robot.turnLeftTillDegrees(85, 1.0, true, true);
-        robot.driveBackwardTillTime(1000, 0.35, true);
+        robot.driveForwardTillTicks(distanceMoved,0.1,0.5,180,false,true);
+        positions[5] = robot.getOdometryPosition();
+
+        robot.turnLeftTillDegrees(100, 1.0, false, true);
+        positions[6] = robot.getOdometryPosition();
+
         robot.raiseFoundationServos();
+
+        robot.driveBackwardTillTime(1, 0.35, false);
+        if (robot.stoneDetected())
+            robot.dropStone();
+
+        positions[7] = robot.getOdometryPosition();
+        robot.driveForwardTillRotation(3.0, 0.60, 0.60, 90, false, true);
 
 
         // 1 - 5.3 sec
@@ -139,7 +170,18 @@ public class AutonomousTest extends LinearOpMode {
 
             telemetry.addData( "Sec", sec);
 
-            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
+            telemetry.addData( "Pos 0", positions[0]);
+            telemetry.addData( "Pos 1", positions[1]);
+            telemetry.addData( "Pos 2", positions[2]);
+            telemetry.addData( "Pos 3", positions[3]);
+            telemetry.addData( "Pos 4", positions[4]);
+            telemetry.addData( "Pos 5", positions[5]);
+            telemetry.addData( "Pos 6", positions[6]);
+            telemetry.addData( "Pos 7", positions[7]);
+            telemetry.addData( "DistanceMoved", distanceMoved);
+
+
+/*            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
             telemetry.addData( "Gyro Pos", robot.getCurrentPositionInDegrees());
 
@@ -149,7 +191,7 @@ public class AutonomousTest extends LinearOpMode {
 
             telemetry.addData("MotorBL Pos", (double)robot.motorBL.getCurrentPosition());
             telemetry.addData("MotorTape Pos", (double)robot.motorTape.getCurrentPosition());
-
+*/
             telemetry.update();
         }
 

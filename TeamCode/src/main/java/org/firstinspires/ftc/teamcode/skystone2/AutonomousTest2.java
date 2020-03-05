@@ -48,9 +48,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Auto Red Stone", group="Autonomous")
+@Autonomous(name="Autonomous Test 2", group="Autonomous")
 //@Disabled
-public class AutonomousRedStone extends LinearOpMode {
+public class AutonomousTest2 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -67,7 +67,7 @@ public class AutonomousRedStone extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_RED);
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE);
         robot.setOpMode(this);
         robot.initGyroSensor();
         robot.initDriveMotors();
@@ -100,81 +100,28 @@ public class AutonomousRedStone extends LinearOpMode {
             telemetry.update();
         }
 
-        ///////////////////////////////////////
-        // Start of program
-        ///////////////////////////////////////
 
-        startAuto();
-
-        ////////////////
-        // STEP 1
-        ////////////////
-        grabSkystone();
-
-        ////////////////
-        // STEP 2
-        ////////////////
-        crossAllianceBridge();
-
-        ////////////////
-        // STEP 3
-        ////////////////
-        dropSkystone();
-
-        ////////////////
-        // STEP 4
-        ////////////////
-        moveUnderAllianceBridge();
-
-        robot.stopDriveMotors();
-    }
-
-    void startAuto() {
-        robot.shutdownTensorFlow();
-        robot.resetAutonomousTimer();
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-        robot.servoCamera.setPosition(0);
-    }
-
-    void grabSkystone() {
-
-    }
+        robot.servoCamera.setPosition(0.3);
 
 
-    void crossAllianceBridge(){
-        if (!opModeIsActive())
-            return;
+        double ms = 0;
+        if (robot.stoneDetected()) {
+            robot.grabStone();
 
-        double distanceToGo = 2.75;
-        switch (skystonePosition) {
-            case SKYSTONE_POSITION_3_6:
-                distanceToGo += 0;
-                break;
-
-            case SKYSTONE_POSITION_2_5:
-                distanceToGo += 0.35;
-                break;
-
-            case SKYSTONE_POSITION_1_4:
-                distanceToGo += 0.75;
-                break;
+            sleep(1000);
+            runtime.reset();
+            robot.dropStone2();
+            ms = runtime.milliseconds();
         }
 
-        robot.driveBackwardTillRotation(distanceToGo, 0.7,0.7, 270, true, true);
-    }
+        while (opModeIsActive() ) {
+
+            telemetry.addData("ms", ms);
+            telemetry.update();
+        }
 
 
-    void dropSkystone(){
-        if (!opModeIsActive())
-            return;
-
-        if (robot.stoneDetected() && opModeIsActive())
-            robot.dropStone();
-    }
-
-
-    void moveUnderAllianceBridge() {
-        robot.driveForwardTillRotation(1.0,0.10,0.40,270,false,true);
     }
 
 }

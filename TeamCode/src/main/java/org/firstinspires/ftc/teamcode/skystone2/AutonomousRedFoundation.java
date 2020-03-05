@@ -151,28 +151,28 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.driveForwardTillRotation(1.50,0.20,0.50,0, true, false);
 
         switch (skystonePosition) {
-            case SKYSTONE_POSITION_3_6:
+            case SKYSTONE_POSITION_1:
                 robot.driveForwardTillRotation(1.75, 0.5,0.30, 0, false, false);
                 robot.driveBackwardTillRotation(1.20, 0.30,0.50, 0, true, true);
                 break;
 
-            case SKYSTONE_POSITION_2_5:
+            case SKYSTONE_POSITION_2:
                 robot.turnLeftTillDegrees(270, true, true);
                 robot.driveBackwardTillRotation(0.30, 0.20,0.50, 270, false, true);
-                robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
+                robot.driveRightTillRotation(1.25, 0.50,0.50, 270, false, false);
 
                 robot.driveForwardTillRotation(0.45, 0.30,0.30, 270, false, true);
                 sleep(250);
-                robot.driveLeftTillRotation(1.25, 0.50, 270, false, true);
+                robot.driveLeftTillRotation(1.25, 0.50,0.50, 270, false, true);
                 break;
 
-            case SKYSTONE_POSITION_1_4:
+            case SKYSTONE_POSITION_3:
                 robot.turnLeftTillDegrees(270, true, false);
                 robot.driveForwardTillRotation(0.15,0.50, 0.50, 270, false, false);
-                robot.driveRightTillRotation(1.25, 0.50, 270, false, false);
+                robot.driveRightTillRotation(1.25, 0.50,0.50, 270, false, false);
                 robot.driveForwardTillRotation(0.45, 0.50,0.30, 270, false, true);
                 sleep(250);
-                robot.driveLeftTillRotation(1.25, 0.50, 270, false, true);
+                robot.driveLeftTillRotation(1.25, 0.50,0.50, 270, false, true);
                 robot.stopDriveMotors();
                 break;
         }
@@ -192,15 +192,15 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
         double distanceToGo = 3.75;
         switch (skystonePosition) {
-            case SKYSTONE_POSITION_3_6:
+            case SKYSTONE_POSITION_1:
                 distanceToGo = 3.75;
                 break;
 
-            case SKYSTONE_POSITION_2_5:
+            case SKYSTONE_POSITION_2:
                 distanceToGo = 4.00;
                 break;
 
-            case SKYSTONE_POSITION_1_4:
+            case SKYSTONE_POSITION_3:
                 distanceToGo = 4.25;
                 break;
         }
@@ -232,11 +232,11 @@ public class AutonomousRedFoundation extends LinearOpMode {
         robot.turnRightTillDegrees(275, 0.90,true,true);
         robot.driveBackwardTillTime(1000,0.35, true);
         robot.raiseFoundationServos();
-        robot.driveRightTillRotation(0.20,0.5,270,false,true);
+        robot.driveRightTillRotation(0.20,0.5,0.5,270,false,true);
     }
 
     void moveUnderAllianceBridge() {
-        robot.driveLeftTillRotation(0.20,0.5,270,false,true);
+        robot.driveLeftTillRotation(0.20,0.5,0.5,270,false,true);
 
         robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
         robot.driveForwardTillRotation(3.0,0.60,0.60,270,false,true);
