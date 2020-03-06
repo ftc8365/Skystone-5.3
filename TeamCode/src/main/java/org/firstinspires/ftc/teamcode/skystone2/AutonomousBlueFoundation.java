@@ -130,7 +130,8 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         ////////////////
         // STEP 5
         ////////////////
-        moveUnderAllianceBridge();
+        grab2ndSkystone();
+//        moveUnderAllianceBridge();
 
         robot.stopDriveMotors();
 
@@ -277,18 +278,18 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         robot.driveBackwardTillRotation(distanceToGo, 0.70,0.70, 90, false, false);
 
-        robot.driveBackwardTillRange(22,0.70,0.35, 90, true);
+        robot.driveBackwardTillRange(22,0.70,0.35, 90, true,true);
 
         robot.turnRightTillDegrees(170, false, true);
 
-        long startBackupPos = robot.motorFR.getCurrentPosition();
+        int startBackupPos = robot.motorFR.getCurrentPosition();
         robot.driveBackwardTillTime(500,0.25,true);
-        long endBackupPos = robot.motorFR.getCurrentPosition();
+        int endBackupPos = robot.motorFR.getCurrentPosition();
 
         robot.lowerFoundationServos();
         sleep(250);
 
-        long distanceMoved = startBackupPos - endBackupPos;
+        int distanceMoved = startBackupPos - endBackupPos;
 
         robot.driveForwardTillTicks(distanceMoved,0.1,0.5,180,false,true);
 
@@ -329,5 +330,36 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         }
         telemetry.addData("moveUnderAllianceBridge End", robot.autonomusTimer.milliseconds());
     }
+
+    void grab2ndSkystone() {
+        telemetry.addData("grab2ndSkystone Begin", robot.autonomusTimer.milliseconds());
+
+        if (opModeIsActive()) {
+
+            double rangeToGo = 0;
+
+            switch (skystonePosition) {
+                case SKYSTONE_POSITION_1:
+                    rangeToGo = 16;
+                    break;
+
+                case SKYSTONE_POSITION_2:
+                    rangeToGo = 12;
+                    break;
+
+                case SKYSTONE_POSITION_3:
+                    rangeToGo = 8;
+                    break;
+            }
+
+            robot.driveForwardTillRotation(6.0, 0.70, 0.70, 90, false, true);
+
+            robot.driveForwardTillRange(rangeToGo,0.70,0.35, 90, true,true);
+        }
+
+        telemetry.addData("grab2ndSkystone End", robot.autonomusTimer.milliseconds());
+    }
+
+
 
 }

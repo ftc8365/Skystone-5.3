@@ -30,7 +30,6 @@
 package org.firstinspires.ftc.teamcode.skystone2;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -49,9 +48,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Test", group="Autonomous")
+@Autonomous(name="Autonomous Test 3", group="Autonomous")
 //@Disabled
-public class AutonomousTest extends LinearOpMode {
+public class AutonomousTest3 extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -104,69 +103,14 @@ public class AutonomousTest extends LinearOpMode {
 
         autonomusTimer.reset();
 
-        telemetry.addData( "started", autonomusTimer.milliseconds());
 
-        int motorFRStartingPos = robot.motorFR.getCurrentPosition();
-        int motorFLStartingPos = robot.motorFL.getCurrentPosition();
+        robot.driveBackwardTillRange(10, 0.35, 0.35, 0, true, true);
+        telemetry.addData("sec", autonomusTimer.milliseconds());
+        telemetry.addData("rangeSensorBack1", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
 
-        robot.driveForwardTillRotation(5.0, 0.80, 0.80, 0, true, true);
-
-        telemetry.addData( "range started", autonomusTimer.milliseconds());
-
-        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
-        robot.raiseGrabber();
-
-        int interations = robot.driveForwardTillRange(31, 0.35, 0.35, 0, true, true);
-//        int interations = robot.driveForwardTillRange(23, 0.35, 0.35, 0, true, true);
-//        int interations = robot.driveForwardTillRange(15, 0.35, 0.35, 0, true, true);
-
-        int motorFRMoved = robot.motorFR.getCurrentPosition() - motorFRStartingPos;
-        int motorFLMoved = robot.motorFL.getCurrentPosition() - motorFLStartingPos;
-        int distanceMoved = ( motorFRMoved + motorFLMoved ) / 2 + (int)(0.35 * robot.TICK_PER_WHEEL_ROTATION);
-
-        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
-
-        telemetry.addData( "range finished", autonomusTimer.milliseconds());
-
-        robot.driveLeftTillRotation(0.50, 0.50,0.50, 0, false, false);
-
-        robot.driveForwardTillRotation(0.45, 0.35,0.35, 0, false, true);
-
-        runtime.reset();
-
-        while (runtime.milliseconds() < 2000) {
-            if (robot.stoneDetected())  {
-                break;
-            }
-        }
-
-        robot.driveRightTillRotation(0.50, 0.50,0.50, 0, false, true);
-
-        robot.turnIntakeoff();
-
-        if (robot.stoneDetected())  {
-            telemetry.addData("grabStone Begin", autonomusTimer.milliseconds());
-            robot.grabStone();
-            telemetry.addData("grabStone End", autonomusTimer.milliseconds());
-        }
-
-        telemetry.addData( "return started", autonomusTimer.milliseconds());
-
-        robot.driveBackwardTillTicks(distanceMoved-80, 0.80, 0.80, 0, true, true, 1000);
-
-        telemetry.addData( "return finished", autonomusTimer.milliseconds());
-
-        telemetry.addData( "dropStone2 started", autonomusTimer.milliseconds());
-
-        if (robot.stoneDetected())
-            robot.dropStone2();
-        telemetry.addData( "dropStone2 ended", autonomusTimer.milliseconds());
-
-        robot.driveForwardTillRotation(2.75, 0.80, 0.80, 0, false, true);
-
-
-        telemetry.addData( "finished", autonomusTimer.seconds());
-//        telemetry.addData("rangeSensorFront", robot.rangeSensorFront.getDistance(DistanceUnit.INCH));
+        sleep(1000);
+        telemetry.addData("rangeSensorBack2", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
+        telemetry.addData("rangeSensorFront", robot.rangeSensorFront.getDistance(DistanceUnit.INCH));
         telemetry.update();
 
         while (opModeIsActive() ) {

@@ -206,7 +206,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
         }
 
         robot.driveBackwardTillRotation(distanceToGo, 0.70,0.7, 270, false, false);
-        robot.driveBackwardTillRange(11.5, 0.70,0.50, 270, false);
+        robot.driveBackwardTillRange(11.5, 0.70,0.50, 270, true,false);
         robot.driveForwardTillRotation(0.20, 0.35,0.50, 270, false, false);
         robot.turnLeftTillDegrees(180, true, true);
 
