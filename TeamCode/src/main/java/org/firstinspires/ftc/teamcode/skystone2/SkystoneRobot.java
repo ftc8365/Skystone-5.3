@@ -1470,7 +1470,7 @@ public class SkystoneRobot {
         switch (position) {
             case FOUNDATION_SERVO_UP:
                 servoFoundationLeft.setPosition(0.35);
-                servoFoundationRight.setPosition(0.65);
+                servoFoundationRight.setPosition(0.60);
                 break;
             case FOUNDATION_SERVO_MIDDLE:
                 servoFoundationLeft.setPosition(0.75);
