@@ -753,21 +753,29 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void driveBackwardTillRotation( double rotation, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
-        driveBackwardTillTicks( (int)(TICK_PER_WHEEL_ROTATION * rotation), initPower, targetPower, targetHeading, rampDown, stopMotors, -1 );
+        driveBackwardTillTicks( (int)(TICK_PER_WHEEL_ROTATION * rotation), initPower, targetPower, targetHeading, rampDown, stopMotors, -1, -1);
     }
 
-    public void driveBackwardTillTicks( int ticks, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors, int rampDownRange )
+    public void driveBackwardTillTicks( int ticks, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors, int rampDownRange, int maxTime )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = getCurrentDrivePosition();
         int ticksToGo           = 0;
         double power            = initPower;
+        double startingTime     = 0;
+
+        if (maxTime > 0)
+            startingTime = autonomusTimer.milliseconds();
 
         while (continueAutonomus()) {
             ticksToGo = ticks - (initPosition - getCurrentDrivePosition());
-
             if (ticksToGo <= 0)
                 break;
+
+            if (maxTime > 0) {
+                if ((autonomusTimer.milliseconds() - startingTime) > maxTime)
+                    break;
+            }
 
             power = pidController.getDrivePower(power, ticksToGo, targetPower, rampDown);
 
@@ -805,18 +813,41 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveBackwardTillTime
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void driveBackwardTillTime( long timeInMilliSeconds, double targetPower, boolean stopMotors ) {
+    public void driveBackwardTillTime( long timeInMilliSeconds, double targetPower, int targetHeading, boolean stopMotors ) {
 
-        boolean useGyroToAlign = false;
+        boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
+        double power            = targetPower;
+        double currentTime      = autonomusTimer.milliseconds();
 
-        double power = targetPower;
+        while (continueAutonomus()) {
 
-        motorFR.setPower( power * -1);
-        motorFL.setPower( power * -1);
-        motorBR.setPower( power * -1);
-        motorBL.setPower( power * -1);
+            if (autonomusTimer.milliseconds() - currentTime >= timeInMilliSeconds)
+                break;
 
-        try { Thread.sleep(timeInMilliSeconds); } catch (Exception e) {}
+            power = targetPower;
+
+            double powerRight = power;
+            double powerLeft  = power;
+
+            // Adjusting motor power based on gyro position
+            // to force the robot to move straight
+            if (useGyroToAlign) {
+                double currentPosition = this.getCurrentPositionInDegrees();
+                double headingChange   = currentPosition - targetHeading;
+
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
+                }
+                powerRight -=  2 * (headingChange / 100);
+                powerLeft  +=  2 * (headingChange / 100);
+
+            }
+
+            motorFR.setPower( powerRight * -1);
+            motorFL.setPower( powerLeft * -1);
+            motorBR.setPower( powerRight * -1);
+            motorBL.setPower( powerLeft * -1);
+        }
 
         if (stopMotors) {
             stopDriveMotors();
@@ -858,7 +889,7 @@ public class SkystoneRobot {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    double getMinRangeInInches() {
+    double getBackRangeInInches() {
         double range = this.rangeSensorBack.getDistance(DistanceUnit.INCH);
 
         if (range == 0)
@@ -892,10 +923,10 @@ public class SkystoneRobot {
         while (continueAutonomus()) {
             ++count;
 
-            double curRange = getMinRangeInInches();
+            double curRange = getBackRangeInInches();
             double rangeToGo = curRange - targetRange;
 
-            opMode.telemetry.addData( "range " + count, curRange);
+//            opMode.telemetry.addData( "range " + count, curRange);
 
             if (rangeToGo <= 0.1 )
                 break;
@@ -903,7 +934,7 @@ public class SkystoneRobot {
             kalmanFilter.updateValue(curRange);
 
             double expectedNextRange =  kalmanFilter.getEstimate();
-            opMode.telemetry.addData( "expectedNextError " + count, expectedNextRange);
+//            opMode.telemetry.addData( "expectedNextError " + count, expectedNextRange);
 
             if (expectedNextRange - targetRange <= 0)
                 break;
@@ -914,7 +945,7 @@ public class SkystoneRobot {
 
 
             if (rangeToGo < 2 ) {
-                opMode.telemetry.addData( "SLOW " + count, rangeToGo);
+//                opMode.telemetry.addData( "SLOW " + count, rangeToGo);
 
                 powerRight = 0.05;
                 powerLeft = 0.05;
@@ -955,38 +986,62 @@ public class SkystoneRobot {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // driveForwardTillRange
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public int driveForwardTillRange( double rangeInInches, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public int driveForwardTillRange( double targetRange, double initPower, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         double power            = initPower;
         int count               = 0;
+
+        kalmanFilter.reset();
 
         while (continueAutonomus()) {
             ++count;
 
             double curRange = getFrontRangeInInches();
 
+            double rangeToGo = curRange - targetRange;
+
             opMode.telemetry.addData( "range " + count, curRange);
 
-            if (curRange <= rangeInInches )
+            if (rangeToGo <= 0.1 )
                 break;
 
-            power = getDriveRangePower(power, curRange, targetPower);
+            kalmanFilter.updateValue(curRange);
 
-            double powerRight = power;
-            double powerLeft  = power;
+            double expectedNextRange =  kalmanFilter.getEstimate();
+            opMode.telemetry.addData( "expectedNextError " + count, expectedNextRange);
 
-            // Adjusting motor power based on gyro position
-            // to force the robot to move straight
-            if (useGyroToAlign) {
-                double currentPosition = this.getCurrentPositionInDegrees();
-                double headingChange   = currentPosition - targetHeading;
+            if (expectedNextRange - targetRange <= 0)
+                break;
 
-                if (headingChange > 180 && targetHeading == 0) {
-                    headingChange -= 360;
+            double powerRight = 0.0;
+            double powerLeft = 0.0;
+
+            if (rangeToGo < 2 ) {
+                opMode.telemetry.addData( "SLOW " + count, rangeToGo);
+
+                powerRight = 0.05;
+                powerLeft = 0.05;
+
+            } else {
+
+                power = getDriveRangePower(power, curRange, targetPower);
+
+                powerRight = power;
+                powerLeft = power;
+
+                // Adjusting motor power based on gyro position
+                // to force the robot to move straight
+                if (useGyroToAlign) {
+                    double currentPosition = this.getCurrentPositionInDegrees();
+                    double headingChange = currentPosition - targetHeading;
+
+                    if (headingChange > 180 && targetHeading == 0) {
+                        headingChange -= 360;
+                    }
+                    powerRight += 2 * (headingChange / 100);
+                    powerLeft -= 2 * (headingChange / 100);
                 }
-                powerRight +=  2 * (headingChange / 100);
-                powerLeft  -=  2 * (headingChange / 100);
             }
 
             motorFR.setPower( powerRight );
@@ -1522,7 +1577,10 @@ public class SkystoneRobot {
         }
     }
 
-    public void dropStone() {
+    public boolean placeStone() {
+
+        if (!stoneDetected() && !continueAutonomus())
+            return false;
 
         try {
             setV4BLState(V4BLState.V4BL_STATE_TOP);
@@ -1532,11 +1590,13 @@ public class SkystoneRobot {
             Thread.sleep(350);
             raiseGrabber();
             Thread.sleep(250);
-            setV4BLState(V4BLState.V4BL_STATE_INTAKE);
+            setV4BLState(V4BLState.V4BL_STATE_STONE);
+            Thread.sleep(500);
         }
         catch (Exception e) {
 
         }
+        return true;
     }
 
     public V4BLState getV4BLState() {
@@ -1587,10 +1647,11 @@ public class SkystoneRobot {
     }
 */
 
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // driveBackwardTillRotation
+    // curveBackwardRightTillRotation
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void curveBackwardTillRotation( double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors )
+    public void curveBackwardTillRotation( boolean turnRight, double rotation, double targetPower, int targetHeading, boolean rampDown, boolean stopMotors)
     {
         boolean useGyroToAlign  = (this.gyro != null && targetHeading >= 0) ? true : false;
         int initPosition        = getCurrentDrivePosition();
@@ -1614,30 +1675,24 @@ public class SkystoneRobot {
             double powerRight = power;
             double powerLeft  = power;
 
-            // Adjusting motor power based on gyro position
-            // to force the robot to move straight
-            if (useGyroToAlign) {
-                double headingChange   = currentHeading - targetHeading;
+            double headingChange   = currentHeading - targetHeading;
 
-                if (headingChange > 180 && targetHeading == 0) {
-                    headingChange -= 360;
-                }
-
-                double change = headingChange / 100;
-
-                if (change < 0) {
-                    if (change < -0.5)
-                        change = -0.5;
-                    else if (change > change -0.25)
-                        change = -0.25;
-                }
-                powerRight -= 0.60 * change;
-                powerLeft  += 0.60 * change;
-
-                //powerRight -=  0.7 * (headingChange / 100);
-                //powerLeft  +=  0.7 * (headingChange / 100);
-
+            if (headingChange > 180 && targetHeading == 0) {
+                headingChange -= 360;
             }
+
+            double change = headingChange / 100;
+
+            if (change < 0) {
+                if (change < -0.5)
+                    change = -0.5;
+                else if (change > change -0.25)
+                    change = -0.25;
+            }
+
+
+            powerRight -= 0.75 * change * (turnRight ? 1 : -1 );
+            powerLeft  += 0.75 * change * (turnRight ? 1 : -1 );
 
             motorFR.setPower( powerRight * -1);
             motorFL.setPower( powerLeft * -1);
@@ -1649,5 +1704,7 @@ public class SkystoneRobot {
             stopDriveMotors();
         }
     }
+
+
 
 }

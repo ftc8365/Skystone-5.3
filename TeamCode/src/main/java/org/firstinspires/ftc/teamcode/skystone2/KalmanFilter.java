@@ -13,7 +13,7 @@ public class KalmanFilter {
 
     double getEstimate() {
 
-        return currentValue + (currentValue - lastValue) + delta;
+        return lastValue > 0 ? currentValue + (currentValue - lastValue)  : currentValue;
     }
 
     void updateValue( double value) {

@@ -37,6 +37,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 
+
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -49,9 +50,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Autonomous Test 2", group="Autonomous")
+@Autonomous(name="Auto Red Foundation", group="Autonomous")
 @Disabled
-public class AutonomousTest2 extends LinearOpMode {
+public class AutonomousRedFoundationOld extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
     // Declare OpMode members
@@ -68,7 +69,7 @@ public class AutonomousTest2 extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE);
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_RED);
         robot.setOpMode(this);
         robot.initGyroSensor();
         robot.initDriveMotors();
@@ -89,40 +90,158 @@ public class AutonomousTest2 extends LinearOpMode {
 
             skystonePosition = robot.scanSkystone(skystonePosition);
             telemetry.addData("Skystone", skystonePosition);
-
+            telemetry.addData("", "------------------------------");
             telemetry.addData("distance", robot.distanceSensor.getDistance(DistanceUnit.CM));
             telemetry.addData("Gyro Pos", robot.getCurrentPositionInDegrees());
             telemetry.addData("MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData("MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("range_sensor", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
+            telemetry.addData("rangeSensorFront", robot.rangeSensorFront.getDistance(DistanceUnit.INCH));
+            telemetry.addData("rangeSensorBack", robot.rangeSensorBack.getDistance(DistanceUnit.INCH));
 
             telemetry.addData("", "------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
         }
 
+        ///////////////////////////////////////
+        // Start of program
+        ///////////////////////////////////////
 
+        startAuto();
+
+        ////////////////
+        // STEP 1
+        ////////////////
+        grabSkystone();
+
+        ////////////////
+        // STEP 2
+        ////////////////
+        grabFoundation();
+
+        ////////////////
+        // STEP 3
+        ////////////////
+        turnFoundation();
+
+        ////////////////
+        // STEP 4
+        ////////////////
+        dropSkystone();
+
+        ////////////////
+        // STEP 5
+        ////////////////
+        moveUnderAllianceBridge();
+
+        robot.stopDriveMotors();
+    }
+
+    void startAuto() {
+        robot.shutdownTensorFlow();
+        robot.resetAutonomousTimer();
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-        robot.servoCamera.setPosition(0.3);
+        robot.servoCamera.setPosition(0);
+    }
 
+    void grabSkystone() {
+        if (!opModeIsActive())
+            return;
 
-        double ms = 0;
+        robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+        robot.driveForwardTillRotation(1.50,0.20,0.50,0, true, false);
+
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+                robot.driveForwardTillRotation(1.75, 0.5,0.30, 0, false, false);
+                robot.driveBackwardTillRotation(1.20, 0.30,0.50, 0, true, true);
+                break;
+
+            case SKYSTONE_POSITION_2:
+                robot.turnLeftTillDegrees(270, true, true);
+                robot.driveBackwardTillRotation(0.30, 0.20,0.50, 270, false, true);
+                robot.driveRightTillRotation(1.25, 0.50,0.50, 270, false, false);
+
+                robot.driveForwardTillRotation(0.45, 0.30,0.30, 270, false, true);
+                sleep(250);
+                robot.driveLeftTillRotation(1.25, 0.50,0.50, 270, false, true);
+                break;
+
+            case SKYSTONE_POSITION_3:
+                robot.turnLeftTillDegrees(270, true, false);
+                robot.driveForwardTillRotation(0.15,0.50, 0.50, 270, false, false);
+                robot.driveRightTillRotation(1.25, 0.50,0.50, 270, false, false);
+                robot.driveForwardTillRotation(0.45, 0.50,0.30, 270, false, true);
+                sleep(250);
+                robot.driveLeftTillRotation(1.25, 0.50,0.50, 270, false, true);
+                robot.stopDriveMotors();
+                break;
+        }
+
+        robot.turnIntakeoff();
+
         if (robot.stoneDetected()) {
             robot.grabStone();
-
-            sleep(1000);
-            runtime.reset();
-            robot.dropStone2();
-            ms = runtime.milliseconds();
         }
 
-        while (opModeIsActive() ) {
+        robot.turnLeftTillDegrees(280, false, true);
+    }
 
-            telemetry.addData("ms", ms);
-            telemetry.update();
+    void grabFoundation(){
+        if (!opModeIsActive())
+            return;
+
+        double distanceToGo = 3.75;
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+                distanceToGo = 3.75;
+                break;
+
+            case SKYSTONE_POSITION_2:
+                distanceToGo = 4.00;
+                break;
+
+            case SKYSTONE_POSITION_3:
+                distanceToGo = 4.25;
+                break;
         }
 
+        robot.driveBackwardTillRotation(distanceToGo, 0.70,0.7, 270, false, false);
+        robot.driveBackwardTillRange(11.5, 0.70,0.50, 270, true,false);
+        robot.driveForwardTillRotation(0.20, 0.35,0.50, 270, false, false);
+        robot.turnLeftTillDegrees(180, true, true);
 
+        robot.driveBackwardTillTime(1000,0.25,180,true);
+        robot.lowerFoundationServos();
+        sleep(500);
+        /////////////////////INCREASE IF NEEDED TO GET CLOSER TO BUILDING SITE/////////////////////AT MOST BY 0.1/////////
+        robot.driveForwardTillRotation(1.1,0.6,0.6,180,true,true);
+    }
+
+    void dropSkystone(){
+        if (!opModeIsActive())
+            return;
+
+        if (robot.stoneDetected() && opModeIsActive())
+            robot.dropStone();
+    }
+
+    void turnFoundation(){
+        if (!opModeIsActive())
+            return;
+
+        robot.turnRightTillDegrees(275, 0.90,true,true);
+        robot.driveBackwardTillTime(1000,0.35, 270,true);
+        robot.raiseFoundationServos();
+        robot.driveRightTillRotation(0.20,0.5,0.5,270,false,true);
+    }
+
+    void moveUnderAllianceBridge() {
+        robot.driveLeftTillRotation(0.20,0.5,0.5,270,false,true);
+
+        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_STONE);
+        robot.driveForwardTillRotation(3.0,0.60,0.60,270,false,true);
     }
 
 }

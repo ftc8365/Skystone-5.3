@@ -50,7 +50,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name="Autonomous Test", group="Autonomous")
-//@Disabled
+@Disabled
 public class AutonomousTest extends LinearOpMode {
 
     //////////////////////////////////////////////////////////////////////
@@ -152,7 +152,7 @@ public class AutonomousTest extends LinearOpMode {
 
         telemetry.addData( "return started", autonomusTimer.milliseconds());
 
-        robot.driveBackwardTillTicks(distanceMoved-80, 0.80, 0.80, 0, true, true, 1000);
+        robot.driveBackwardTillTicks(distanceMoved-50, 0.80, 0.80, 0, true, true, 1000, 7000);
 
         telemetry.addData( "return finished", autonomusTimer.milliseconds());
 

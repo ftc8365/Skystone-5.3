@@ -67,11 +67,13 @@ public class AutonomousNavigateForward extends LinearOpMode {
         robot.setOpMode( this );
         robot.initDriveMotors();
         robot.initIntakeServos();
+        robot.initCameraServo();
+        robot.initColorSensors();
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
             telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("",  "------------------------------");
+            telemetry.addData("",  "-------------------------0-----");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
         }
@@ -83,7 +85,7 @@ public class AutonomousNavigateForward extends LinearOpMode {
         robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
         robot.servoCamera.setPosition(0.3);
 
-        robot.driveForwardTillRotationOrCOlor(1.0, 0.30, false, true);
+        robot.driveForwardTillRotationOrCOlor(1.2, 0.20, false, true);
 
     }
 
