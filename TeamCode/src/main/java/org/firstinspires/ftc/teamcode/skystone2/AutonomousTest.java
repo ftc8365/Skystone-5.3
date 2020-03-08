@@ -81,6 +81,10 @@ public class AutonomousTest extends LinearOpMode {
 
         robot.servoCamera.setPosition(0.5);
 
+//        robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
+//        robot.raiseGrabber();
+
+
         while (!opModeIsActive() && !isStopRequested()) {
 
             telemetry.addData("distance",  robot.distanceSensor.getDistance(DistanceUnit.CM));
@@ -104,65 +108,57 @@ public class AutonomousTest extends LinearOpMode {
 
         autonomusTimer.reset();
 
-        telemetry.addData( "started", autonomusTimer.milliseconds());
+        double rangeToGo = 30.5;
+        double rotationToGo = 0.5;
+/*
+        switch (skystonePosition) {
+            case SKYSTONE_POSITION_1:
+                rangeToGo = 31;
+                rotationToGo = 4.5;
+                break;
 
-        int motorFRStartingPos = robot.motorFR.getCurrentPosition();
-        int motorFLStartingPos = robot.motorFL.getCurrentPosition();
+            case SKYSTONE_POSITION_2:
+                rangeToGo = 23;
+                rotationToGo += 0.5;
+                break;
 
-        robot.driveForwardTillRotation(5.0, 0.80, 0.80, 0, true, true);
+            case SKYSTONE_POSITION_3:
+                rangeToGo = 15.5;
+                rotationToGo += 0.9;
+                break;
+        }        */
 
-        telemetry.addData( "range started", autonomusTimer.milliseconds());
+        robot.driveForwardTillRotation(rotationToGo, 0.80, 0.80, 0, true, true);
 
         robot.initV4BLState(SkystoneRobot.V4BLState.V4BL_STATE_INTAKE);
         robot.raiseGrabber();
 
-        int interations = robot.driveForwardTillRange(31, 0.35, 0.35, 0, true, true);
-//        int interations = robot.driveForwardTillRange(23, 0.35, 0.35, 0, true, true);
-//        int interations = robot.driveForwardTillRange(15, 0.35, 0.35, 0, true, true);
+        robot.driveForwardTillRange(rangeToGo, 0.35, 0.35, 0, true, true);
 
-        int motorFRMoved = robot.motorFR.getCurrentPosition() - motorFRStartingPos;
-        int motorFLMoved = robot.motorFL.getCurrentPosition() - motorFLStartingPos;
-        int distanceMoved = ( motorFRMoved + motorFLMoved ) / 2 + (int)(0.35 * robot.TICK_PER_WHEEL_ROTATION);
 
         robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
 
-        telemetry.addData( "range finished", autonomusTimer.milliseconds());
+        robot.driveRightTillRotation(0.50, 0.50,0.50, 0, false, false);
 
-        robot.driveLeftTillRotation(0.50, 0.50,0.50, 0, false, false);
+        robot.driveForwardTillRotation(0.50, 0.35,0.35, 0, false, true);
 
-        robot.driveForwardTillRotation(0.45, 0.35,0.35, 0, false, true);
+        ElapsedTime timer = new ElapsedTime();
+        timer.reset();
 
-        runtime.reset();
-
-        while (runtime.milliseconds() < 2000) {
+        while (timer.milliseconds() < 2000) {
             if (robot.stoneDetected())  {
+                robot.grabStone();
                 break;
             }
         }
 
-        robot.driveRightTillRotation(0.50, 0.50,0.50, 0, false, true);
-
         robot.turnIntakeoff();
 
-        if (robot.stoneDetected())  {
-            telemetry.addData("grabStone Begin", autonomusTimer.milliseconds());
-            robot.grabStone();
-            telemetry.addData("grabStone End", autonomusTimer.milliseconds());
-        }
+        robot.driveLeftTillRotation(0.50, 0.50,0.50, 0, false, true);
 
-        telemetry.addData( "return started", autonomusTimer.milliseconds());
 
-        robot.driveBackwardTillTicks(distanceMoved-50, 0.80, 0.80, 0, true, true, 1000, 7000);
 
-        telemetry.addData( "return finished", autonomusTimer.milliseconds());
 
-        telemetry.addData( "dropStone2 started", autonomusTimer.milliseconds());
-
-        if (robot.stoneDetected())
-            robot.dropStone2();
-        telemetry.addData( "dropStone2 ended", autonomusTimer.milliseconds());
-
-        robot.driveForwardTillRotation(2.75, 0.80, 0.80, 0, false, true);
 
 
         telemetry.addData( "finished", autonomusTimer.seconds());

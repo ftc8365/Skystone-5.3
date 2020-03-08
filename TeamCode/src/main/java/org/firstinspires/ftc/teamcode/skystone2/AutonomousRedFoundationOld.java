@@ -103,6 +103,22 @@ public class AutonomousRedFoundationOld extends LinearOpMode {
             telemetry.update();
         }
 
+
+/*
+        void grabSkystoneMotion() {
+            if (!opModeIsActive())
+                return;
+
+            robot.turnIntakeOn(SkystoneRobot.IntakeDirection.INTAKE_DIRECTION_IN);
+
+            robot.setCoordiantes(0,0);
+            robot.driveToCoordinate(0,1120);
+            robot.driveToCoordinate(560,940);
+
+        }
+
+        */
+
         ///////////////////////////////////////
         // Start of program
         ///////////////////////////////////////
@@ -223,8 +239,8 @@ public class AutonomousRedFoundationOld extends LinearOpMode {
         if (!opModeIsActive())
             return;
 
-        if (robot.stoneDetected() && opModeIsActive())
-            robot.dropStone();
+//        if (robot.stoneDetected() && opModeIsActive())
+//            robot.dropStone();
     }
 
     void turnFoundation(){

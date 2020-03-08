@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -63,17 +65,17 @@ public class AutonomousNavigateForward extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE );
-        robot.setOpMode( this );
+        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE);
+        robot.setOpMode(this);
         robot.initDriveMotors();
         robot.initIntakeServos();
         robot.initCameraServo();
         robot.initColorSensors();
 
         while (!opModeIsActive() && !isStopRequested()) {
-            telemetry.addData( "MotorFR Pos", robot.motorFR.getCurrentPosition());
-            telemetry.addData( "MotorFL Pos", robot.motorFL.getCurrentPosition());
-            telemetry.addData("",  "-------------------------0-----");
+            telemetry.addData("Color Sensor", robot.colorDistance.getDistance(DistanceUnit.INCH));
+
+            telemetry.addData("", "-------------------------------");
             telemetry.addData(">", "Press Play to start");
             telemetry.update();
         }
@@ -87,6 +89,11 @@ public class AutonomousNavigateForward extends LinearOpMode {
 
         robot.driveForwardTillRotationOrCOlor(1.2, 0.20, false, true);
 
+        telemetry.update();
+
+        while (opModeIsActive()) {
+            sleep(10);
+        }
     }
 
 }

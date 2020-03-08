@@ -38,7 +38,7 @@ public class SkystoneRobot {
 
     final int AUTONOMOUS_DURATION_MSEC  = 29800;
 
-    final double INTAKE_POWER           = 0.30;
+    final double INTAKE_POWER           = 0.35;
     final double RAMP_UP_RATE_DRIVE     = 0.01;
     final double RAMP_UP_RATE_TURN      = 0.01;
     final double RAMP_UP_RATE_STRAFE    = 0.05;
@@ -71,7 +71,6 @@ public class SkystoneRobot {
             this.servoPos = pos;
         }
     }
-
 
     double currentV4BLPos               = 0;
     V4BLState currentV4BLState          = V4BLState.V4BL_STATE_UNKNOWN;
@@ -169,8 +168,8 @@ public class SkystoneRobot {
     // Declare sensors
     /////////////////////
     /////////////////////
-    DistanceSensor                  rangeSensorFront   = null;
-    DistanceSensor                  rangeSensorBack   = null;
+    DistanceSensor                  rangeSensorFront = null;
+    DistanceSensor                  rangeSensorBack  = null;
 
     DistanceSensor                  distanceSensor  = null;
     IntegratingGyroscope            gyro            = null;
@@ -273,9 +272,11 @@ public class SkystoneRobot {
     }
 
     public void initRangeSensors() {
-//        rangeSensorBR = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFR");
-//        rangeSensorBL = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range_sensorFL");
-        rangeSensorFront = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorFront");
+        if (allianceMode == AllianceMode.ALLIANCE_BLUE)
+            rangeSensorFront = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorFR");
+        else
+            rangeSensorFront = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorFL");
+
         rangeSensorBack = opMode.hardwareMap.get(DistanceSensor.class, "rangeSensorBack");
     }
 
@@ -587,8 +588,11 @@ public class SkystoneRobot {
         int initPosition        = motorFL.getCurrentPosition();
         int ticksToGo           = 0;
         double power            = initPower;
+//        int count               = 0;
 
         while (continueAutonomus()) {
+//            count++;
+//            opMode.telemetry.addData("rangeSensorFront " + count, rangeSensorFront.getDistance(DistanceUnit.INCH));
 
             //find out how far to go
 
@@ -609,9 +613,10 @@ public class SkystoneRobot {
                 double currentPosition = this.getCurrentPositionInDegrees();
                 double headingChange   = currentPosition - targetHeading;
 
-                if (headingChange > 180 && targetHeading == 0) {
+                if (headingChange > 180 && targetHeading <= 30) {
                     headingChange -= 360;
                 }
+
                 powerRight +=  2 * (headingChange / 100);
                 powerLeft  -=  2 * (headingChange / 100);
             }
@@ -715,12 +720,17 @@ public class SkystoneRobot {
 
         int initPosition = motorFR.getCurrentPosition();
         int ticksToGo = 0;
+        int count = 0;
 
         double power = 0.0;
 
         while (continueAutonomus()) {
+            count++;
 
-            if (this.isColorBlue() || this.isColorRed())
+            boolean colorDetected = this.isColorBlueOrRedDetected();
+            opMode.telemetry.addData( "color detect " + count, colorDetected);
+
+            if (colorDetected)
                 break;
 
             ticksToGo = (int)(TICK_PER_WHEEL_ROTATION * rotation) - (motorFR.getCurrentPosition() - initPosition);
@@ -1001,7 +1011,7 @@ public class SkystoneRobot {
 
             double rangeToGo = curRange - targetRange;
 
-            opMode.telemetry.addData( "range " + count, curRange);
+//            opMode.telemetry.addData( "range " + count, curRange);
 
             if (rangeToGo <= 0.1 )
                 break;
@@ -1009,7 +1019,7 @@ public class SkystoneRobot {
             kalmanFilter.updateValue(curRange);
 
             double expectedNextRange =  kalmanFilter.getEstimate();
-            opMode.telemetry.addData( "expectedNextError " + count, expectedNextRange);
+//            opMode.telemetry.addData( "expectedNextError " + count, expectedNextRange);
 
             if (expectedNextRange - targetRange <= 0)
                 break;
@@ -1018,7 +1028,7 @@ public class SkystoneRobot {
             double powerLeft = 0.0;
 
             if (rangeToGo < 2 ) {
-                opMode.telemetry.addData( "SLOW " + count, rangeToGo);
+//                opMode.telemetry.addData( "SLOW " + count, rangeToGo);
 
                 powerRight = 0.05;
                 powerLeft = 0.05;
@@ -1316,9 +1326,22 @@ public class SkystoneRobot {
     }
 
 
+    public  boolean isColorBlueOrRedDetected() {
+        if (this.colorDistance.getDistance(DistanceUnit.INCH) < 3.0)
+        {
+            if (colorSensor.blue() > colorSensor.green() && colorSensor.blue() > colorSensor.red())
+                return true;
+
+            if (colorSensor.red() > colorSensor.green() && colorSensor.red() > colorSensor.blue())
+                return true;
+
+        }
+        return false;
+
+    }
 
     public boolean isColorBlue() {
-        if (this.colorDistance.getDistance(DistanceUnit.CM) < 6.0) {
+        if (this.colorDistance.getDistance(DistanceUnit.INCH) < 3.0) {
             if (colorSensor.blue() > colorSensor.green() &&
                     colorSensor.blue() > colorSensor.red())
                 return true;
@@ -1328,7 +1351,7 @@ public class SkystoneRobot {
 
 
     public boolean isColorRed() {
-        if (this.colorDistance.getDistance(DistanceUnit.CM) < 6.0) {
+        if (this.colorDistance.getDistance(DistanceUnit.INCH) < 3.0) {
             if (colorSensor.red() > colorSensor.green() &&
                     colorSensor.red() > colorSensor.blue())
                 return true;
@@ -1524,16 +1547,16 @@ public class SkystoneRobot {
     public void setFoundationServos( FoundationServoPosition position ) {
         switch (position) {
             case FOUNDATION_SERVO_UP:
-                servoFoundationLeft.setPosition(0.35);
-                servoFoundationRight.setPosition(0.60);
+                servoFoundationLeft.setPosition(0.38);
+                servoFoundationRight.setPosition(0.64);
                 break;
             case FOUNDATION_SERVO_MIDDLE:
-                servoFoundationLeft.setPosition(0.75);
-                servoFoundationRight.setPosition(0.25);
+                servoFoundationLeft.setPosition(0.80);
+                servoFoundationRight.setPosition(0.23);
                 break;
             case FOUNDATION_SERVO_DOWN:
-                servoFoundationLeft.setPosition(1.00);
-                servoFoundationRight.setPosition(0.00);
+                servoFoundationLeft.setPosition(0.98);
+                servoFoundationRight.setPosition(0.04);
                 break;
         }
     }
@@ -1566,11 +1589,20 @@ public class SkystoneRobot {
 
         try {
 //            setV4BLState(V4BLState.V4BL_STATE_TOP);
-            setV4BLPosition(V4BLState.V4BL_STATE_TOP.servoPos + 0.10);
+            if (continueAutonomus())
+                setV4BLPosition(V4BLState.V4BL_STATE_TOP.servoPos + 0.10);
+
             Thread.sleep(300);
-            raiseGrabber();
+
+            if (continueAutonomus())
+                raiseGrabber();
+
             Thread.sleep(250);
-            setV4BLState(V4BLState.V4BL_STATE_INTAKE);
+
+            if (continueAutonomus())
+                setV4BLState(V4BLState.V4BL_STATE_INTAKE);
+
+            Thread.sleep(500);
         }
         catch (Exception e) {
 
@@ -1579,7 +1611,7 @@ public class SkystoneRobot {
 
     public boolean placeStone() {
 
-        if (!stoneDetected() && !continueAutonomus())
+        if (!stoneDetected() || !continueAutonomus())
             return false;
 
         try {
@@ -1634,18 +1666,8 @@ public class SkystoneRobot {
     }
 
     public void lowerServoShuttle(){
-        servoShuttle.setPosition(0);
+        servoShuttle.setPosition(0.03);
     }
-
-/*    public void driveToCoordinate(double x, double y) {
-        int initialX = 0
-        if (x == initialX) {
-            this.driveForwardTillRotation(y/this.TICK_PER_WHEEL_ROTATION);
-        }
-
-
-    }
-*/
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1658,15 +1680,37 @@ public class SkystoneRobot {
         int ticksToGo           = 0;
         double power            = 0.0;
         double currentHeading   = 0;
+        double headingChange    = 0;
         double degreesToGo      = 0;
+        int count               = 0;
 
         while (continueAutonomus()) {
+            ++count;
 
             currentHeading = getCurrentPositionInDegrees();
-            if (currentHeading > 180 && targetHeading < 180)
-                currentHeading -= 360;
 
-            degreesToGo = targetHeading - currentHeading;
+            if (turnRight) {
+
+                if (currentHeading > 180 && targetHeading < 180)
+                    currentHeading -= 360;
+
+                degreesToGo = targetHeading - currentHeading;
+
+            } else {
+
+                degreesToGo = currentHeading - targetHeading;
+
+//            opMode.telemetry.addData( "currentHeading " + count, currentHeading);
+//            opMode.telemetry.addData( "targetHeading " + count, targetHeading);
+//            opMode.telemetry.addData( "degreesToGo " + count, degreesToGo);
+
+
+                if (degreesToGo < -120) {
+                    degreesToGo += 360;
+//                    opMode.telemetry.addData("degreesToGo " + count, degreesToGo);
+                }
+            }
+
             if (degreesToGo <= TURN_TOLERANCE)
                 break;
 
@@ -1675,10 +1719,21 @@ public class SkystoneRobot {
             double powerRight = power;
             double powerLeft  = power;
 
-            double headingChange   = currentHeading - targetHeading;
+            if (turnRight) {
+                headingChange = currentHeading - targetHeading;
 
-            if (headingChange > 180 && targetHeading == 0) {
-                headingChange -= 360;
+                if (headingChange > 180 && targetHeading == 0) {
+                    headingChange -= 360;
+                }
+            } else {
+                if (currentHeading < 120) {
+                    currentHeading += 360;
+                }
+
+                headingChange = targetHeading - currentHeading;
+
+//                opMode.telemetry.addData( "headingChange " + count, headingChange);
+
             }
 
             double change = headingChange / 100;

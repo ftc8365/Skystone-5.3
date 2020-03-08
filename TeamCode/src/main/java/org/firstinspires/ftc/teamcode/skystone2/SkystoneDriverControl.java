@@ -91,6 +91,7 @@ public class SkystoneDriverControl extends LinearOpMode {
         robot.initFoundationServos();
         robot.initShuttleServos();
 
+        robot.raiseFoundationServos();
         robot.servoCapstone.setPosition(0.50);
 
         while (!opModeIsActive() && !isStopRequested()) {
