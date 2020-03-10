@@ -134,7 +134,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
         ////////////////
         // STEP 5
         ////////////////
-        if (stonePlaced)
+        if (stonePlaced && !robot.stoneDetected())
         {
             grab2ndSkystone();
 
@@ -192,6 +192,10 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
                 robot.turnIntakeoff();
 
+                ////////////////
+                // If robot when curving back, slide swipes skybridge, back up more approx .55
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+
                 robot.driveBackwardTillRotation(0.50, 0.40, 0.40, 0, true, true);
 
                 robot.curveBackwardTillRotation(true, 1.0, 0.6, 90, false, false);
@@ -202,6 +206,8 @@ public class AutonomousBlueFoundation extends LinearOpMode {
             case SKYSTONE_POSITION_3:
                 robot.turnRightTillDegrees(90, true, true);
 
+                /////////// CHANGE ROTATION IF NOT ALLIGNING WITH STONE///////////
+
                 if (skystonePosition == SkystoneRobot.SkystonePosition.SKYSTONE_POSITION_2 )
                     robot.driveBackwardTillRotation(0.15, 0.20,0.50, 90, false, true);
                 else
@@ -209,7 +215,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
                 robot.driveLeftTillRotation(0.55, 0.50,0.50, 90, false, true);
 
-                robot.driveForwardTillRotation(0.65, 0.35,0.35, 90, false, true);
+                robot.driveForwardTillRotation(0.50, 0.35,0.35, 90, false, true);
 
                 timer.reset();
 
@@ -270,6 +276,11 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         int foundationDistanceMoved = startBackupPos - endBackupPos;
 
+
+        //////////////////////////////  //////////////////////////////  //////////////////////////////  //////////////////////////////
+        //////////// If foundation doesn't not touch perimeter, INCREASE 235 TO 240/45
+        //////////////////////////////
+
         robot.driveForwardTillTicks(foundationDistanceMoved + 235,0.1,0.5,180,false,true);
 
         telemetry.addData("grabFoundation End", robot.autonomusTimer.milliseconds());
@@ -284,6 +295,10 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
             if (opModeIsActive())
                 robot.raiseFoundationServos();
+
+            ////    ////    ////    ////    ////    ////    ////    ////    ////    ////    ////    ////    ////    ////
+
+            //// INCREASE IF ROBOT IS NOT WITHIN SECOND LANE
 
             robot.driveLeftTillRotation(0.25, 0.5,0.5, 90, false, true);
 
@@ -357,7 +372,7 @@ public class AutonomousBlueFoundation extends LinearOpMode {
 
         robot.driveLeftTillRotation(0.50, 0.50,0.50, 90, false, false);
 
-        robot.driveForwardTillRotation(0.45, 0.35,0.35, 90, false, true);
+        robot.driveForwardTillRotation(0.50, 0.35,0.35, 90, false, true);
 
         timer.reset();
 

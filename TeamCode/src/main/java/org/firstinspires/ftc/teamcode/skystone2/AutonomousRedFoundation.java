@@ -134,7 +134,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
         ////////////////
         // STEP 5
         ////////////////
-        if (stonePlaced)
+        if (stonePlaced && !robot.stoneDetected())
         {
             grab2ndSkystone();
 
@@ -192,8 +192,11 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
                 robot.turnIntakeoff();
 
+                //////////////// INCREASE if Slideswipes skybridge
+
                 robot.driveBackwardTillRotation(0.50, 0.40, 0.40, 0, true, true);
 
+                //////// go into this program if cannot go back more
                 robot.curveBackwardTillRotation(false, 1.0, 0.6, 270, false, false);
 
                 break;
@@ -209,7 +212,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
                 robot.driveRightTillRotation(0.55, 0.50,0.50, 270, false, true);
 
-                robot.driveForwardTillRotation(0.60, 0.30,0.30, 270, false, true);
+                robot.driveForwardTillRotation(0.50, 0.30,0.30, 270, false, true);
 
                 timer.reset();
 
@@ -270,6 +273,8 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
         int foundationDistanceMoved = startBackupPos - endBackupPos;
 
+        //////////////// INCREASE IF DOESN"T TOUCH PERIMETER
+
         robot.driveForwardTillTicks(foundationDistanceMoved /*+ 235*/,0.1,0.5,180,false,true);
 
 //        telemetry.addData("grabFoundation End", robot.autonomusTimer.milliseconds());
@@ -284,6 +289,8 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
             if (opModeIsActive())
                 robot.raiseFoundationServos();
+
+            /////UNCOMMENT WHEN NEEDED when robot is not within second lane
 
 //            robot.driveRightTillRotation(0.25, 0.5,0.5, 270, false, true);
 
@@ -360,7 +367,7 @@ public class AutonomousRedFoundation extends LinearOpMode {
 
         robot.driveRightTillRotation(0.50, 0.50,0.50, 270, false, false);
 
-        robot.driveForwardTillRotation(0.65, 0.35,0.35, 270, false, true);
+        robot.driveForwardTillRotation(0.50, 0.35,0.35, 270, false, true);
 
         timer.reset();
 

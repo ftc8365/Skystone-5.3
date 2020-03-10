@@ -1400,8 +1400,10 @@ public class SkystoneRobot {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public SkystonePosition scanSkystone( SkystonePosition previousPosition ) {
-        double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.46;
-        double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.40;
+//        double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.46;
+//        double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.40;
+        double servoPos1 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.38 : 0.38;
+        double servoPos2 = (this.allianceMode == SkystoneRobot.AllianceMode.ALLIANCE_BLUE) ? 0.44 : 0.44;
 
         setServoPosition(this.servoCamera, servoPos1, 0);
 
@@ -1745,6 +1747,9 @@ public class SkystoneRobot {
                     change = -0.25;
             }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // INCREASE IF SLIDE SWIPES & SHARPER TURN
+            ////////////78-80
 
             powerRight -= 0.75 * change * (turnRight ? 1 : -1 );
             powerLeft  += 0.75 * change * (turnRight ? 1 : -1 );
