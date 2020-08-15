@@ -45,3 +45,5 @@ Thumbs.db
 build/
 
 *ASUS_PC_01*
+/TeamCode/build/
+/.idea/
