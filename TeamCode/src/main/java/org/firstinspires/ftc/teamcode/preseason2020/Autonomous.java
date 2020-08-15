@@ -27,14 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.skystone2;
+package org.firstinspires.ftc.teamcode.preseason2020;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import org.firstinspires.ftc.teamcode.skystone2.SkystoneRobot;
 
 
 /**
@@ -49,52 +50,66 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@Autonomous(name="Auto Navigate Forward", group="Autonomous")
-@Disabled
-public class AutonomousNavigateForward extends LinearOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Auto", group="Test")
+//@Disabled
+public class Autonomous extends OpMode
+{
+    private ElapsedTime timer = new ElapsedTime();
 
-    //////////////////////////////////////////////////////////////////////
-    // Declare OpMode members
-    //////////////////////////////////////////////////////////////////////
+    Robot robot = new Robot();
 
-    ElapsedTime runtime = new ElapsedTime();
+    int counter = 0;
+    double lastTimerMs = 0;
 
-    ElapsedTime autonomusTimer = new ElapsedTime();
-
-    SkystoneRobot robot = new SkystoneRobot();
-
+    /////////////////////////////////////////////////////////////////////////
+    // Code to run ONCE when the driver hits INIT
+    /////////////////////////////////////////////////////////////////////////
     @Override
-    public void runOpMode() {
-
-        robot.setAllianceMode(SkystoneRobot.AllianceMode.ALLIANCE_BLUE);
-        robot.setOpMode(this);
+    public void init() {
+        robot.setHardwareMap(hardwareMap);
+        robot.setTelemetry(telemetry);
         robot.initDriveMotors();
-        robot.initIntakeServos();
-        robot.initCameraServo();
-        robot.initColorSensors();
+    }
 
-        while (!opModeIsActive() && !isStopRequested()) {
-            telemetry.addData("Color Sensor", robot.colorDistance.getDistance(DistanceUnit.INCH));
-
-            telemetry.addData("", "-------------------------------");
-            telemetry.addData(">", "Press Play to start");
-            telemetry.update();
-        }
-
-        ///////////////////////////////////////
-        // Start of program
-        ///////////////////////////////////////
-        robot.resetAutonomousTimer();
-        robot.setLatchPosition(SkystoneRobot.LatchPosition.LATCH_POSITION_1);
-        robot.servoCamera.setPosition(0.3);
-
-        robot.driveForwardTillRotationOrCOlor(1.2, 0.20, false, true);
-
+    /////////////////////////////////////////////////////////////////////////
+    // Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+    /////////////////////////////////////////////////////////////////////////
+    @Override
+    public void init_loop() {
+        telemetry.addData("", "------------------------------");
+        telemetry.addData(">", "Press Play to start");
         telemetry.update();
+    }
 
-        while (opModeIsActive()) {
-            sleep(10);
-        }
+    /////////////////////////////////////////////////////////////////////////
+    // Code to run ONCE when the driver hits PLAY
+    /////////////////////////////////////////////////////////////////////////
+    @Override
+    public void start() {
+        // reset autonomous timer
+        // use this timer to track how much time since auto started
+        timer.reset();
+
+        robot.motorFR.setPower(0.15);
+        robot.motorFL.setPower(0.15);
+        robot.motorBR.setPower(0.15);
+        robot.motorBL.setPower(0.15);
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+    /////////////////////////////////////////////////////////////////////////
+    @Override
+    public void loop() {
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    // Code to run ONCE after the driver hits STOP
+    /////////////////////////////////////////////////////////////////////////
+    @Override
+    public void stop() {
+        robot.stopAllMotors();
     }
 
 }
+
